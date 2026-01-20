@@ -1,0 +1,6 @@
+-- Add payment period and late fee configuration to Course
+ALTER TABLE "Course" 
+ADD COLUMN IF NOT EXISTS "paymentStartDay" INTEGER DEFAULT 1,
+ADD COLUMN IF NOT EXISTS "paymentEndDay" INTEGER DEFAULT 10,
+ADD COLUMN IF NOT EXISTS "lateFeeValue" NUMERIC DEFAULT 0,
+ADD COLUMN IF NOT EXISTS "lateFeeType" TEXT DEFAULT 'FIXED' CHECK ("lateFeeType" IN ('FIXED', 'PERCENTAGE'));
