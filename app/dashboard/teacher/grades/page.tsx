@@ -86,7 +86,7 @@ export default function TeacherGradesPage() {
                     <option value="">-- Selecione --</option>
                     {classes.map((cls) => (
                         <option key={cls.id} value={cls.id}>
-                            {cls.name} - {cls.subject?.name}
+                            {cls.subject?.name} ({cls.subject?.course?.name} - {cls.subject?.year}º Ano)
                         </option>
                     ))}
                 </select>

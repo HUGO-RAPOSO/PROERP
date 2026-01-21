@@ -323,8 +323,10 @@ export async function getTeacherClasses(teacherId: string) {
         .from('Class')
         .select(`
             *,
-            subject:Subject (*),
-            course:Subject(course:Course(*))
+            subject:Subject (
+                *,
+                course:Course (name)
+            )
         `)
         .eq('teacherId', teacherId);
 
