@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
+import bcrypt from "bcryptjs";
 
 export async function createStudent(data: {
     name: string;
@@ -22,6 +23,23 @@ export async function createStudent(data: {
     if (error) {
         console.error("Error creating student:", error);
         throw new Error(error.message);
+    }
+
+    // Also create/sync User account if email exists
+    if (student.email) {
+        const hashedPassword = await bcrypt.hash("Mudar@123", 10);
+        const { error: userError } = await supabase
+            .from('User')
+            .upsert({
+                email: student.email,
+                name: student.name,
+                password: hashedPassword,
+                tenantId: student.tenantId,
+                role: 'STUDENT',
+                studentId: student.id
+            }, { onConflict: 'email' });
+
+        if (userError) console.error("Error creating student user:", userError);
     }
 
     revalidatePath("/dashboard/academic");

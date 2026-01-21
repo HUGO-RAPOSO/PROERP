@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
+import bcrypt from "bcryptjs";
 
 // Roles (Cargos)
 export async function createRole(data: { name: string; tenantId: string; permissions?: string[] }) {
@@ -83,7 +84,7 @@ export async function createEmployee(data: {
         // Sync with Academic if Role is "Professor" or "Docente"
         const lowerRole = (employee as any).Role?.name?.toLowerCase();
         if (lowerRole?.includes("professor") || lowerRole?.includes("docente")) {
-            const { error: teacherError } = await supabase
+            const { data: teacher, error: teacherError } = await supabase
                 .from('Teacher')
                 .insert({
                     id: employee.id,
@@ -91,9 +92,28 @@ export async function createEmployee(data: {
                     email: employee.email,
                     tenantId: employee.tenantId,
                     employeeId: employee.id
-                });
+                })
+                .select()
+                .single();
 
-            if (teacherError) console.error("Error syncing teacher:", teacherError);
+            if (teacherError) {
+                console.error("Error syncing teacher:", teacherError);
+            } else if (employee.email) {
+                // Also create/sync User account
+                const hashedPassword = await bcrypt.hash("Mudar@123", 10);
+                const { error: userError } = await supabase
+                    .from('User')
+                    .upsert({
+                        email: employee.email,
+                        name: employee.name,
+                        password: hashedPassword,
+                        tenantId: employee.tenantId,
+                        role: 'TEACHER',
+                        teacherId: teacher.id
+                    }, { onConflict: 'email' });
+
+                if (userError) console.error("Error creating teacher user:", userError);
+            }
             revalidatePath("/dashboard/academic");
         }
 
