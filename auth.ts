@@ -48,6 +48,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     ],
 });
 
+import { JWT } from "next-auth/jwt";
+
+declare module "next-auth/jwt" {
+    interface JWT {
+        id: string;
+        tenantId: string;
+        role: string;
+        teacherId?: string;
+        studentId?: string;
+    }
+}
+
 declare module "next-auth" {
     interface Session {
         user: {

@@ -11,21 +11,23 @@ export const authConfig = {
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                token.id = user.id;
-                token.tenantId = (user as any).tenantId;
-                token.role = (user as any).role;
-                token.teacherId = (user as any).teacherId;
-                token.studentId = (user as any).studentId;
+                const u = user as any;
+                token.id = u.id;
+                token.tenantId = u.tenantId;
+                token.role = u.role;
+                // Capture both cases just in case
+                token.teacherId = u.teacherId || u.teacherid;
+                token.studentId = u.studentId || u.studentid;
             }
             return token;
         },
         async session({ session, token }) {
-            if (token) {
-                session.user.id = token.id as string;
-                session.user.tenantId = token.tenantId as string;
-                session.user.role = token.role as string;
-                session.user.teacherId = token.teacherId as string;
-                session.user.studentId = token.studentId as string;
+            if (token && session.user) {
+                session.user.id = token.id;
+                session.user.tenantId = token.tenantId;
+                session.user.role = token.role;
+                session.user.teacherId = token.teacherId;
+                session.user.studentId = token.studentId;
             }
             return session;
         },
