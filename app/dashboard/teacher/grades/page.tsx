@@ -51,8 +51,25 @@ export default function TeacherGradesPage() {
         }
     };
 
-    if (!session?.user?.teacherId) {
-        return <div className="p-8">Acesso restrito a professores.</div>;
+    const isAdmin = session?.user?.role?.toUpperCase() === "ADMIN";
+
+    if (!session?.user?.teacherId && !isAdmin) {
+        return (
+            <div className="p-8">
+                <h1 className="text-2xl font-bold text-red-600 mb-4">Acesso Restrito</h1>
+                <p className="mb-4">Esta página é exclusiva para professores vinculados ou administradores.</p>
+                <div className="bg-gray-100 p-4 rounded-lg text-sm font-mono">
+                    <p>DEBUG INFO:</p>
+                    <p>Role: {session?.user?.role}</p>
+                    <p>TeacherID: {session?.user?.teacherId || "Nulo"}</p>
+                </div>
+                <p className="mt-4 text-gray-500">
+                    Dica: Se você acabou de se vincular como professor, tente
+                    <button onClick={() => window.location.reload()} className="underline text-primary-600 ml-1">recarregar a página</button> ou
+                    fazer logout e login novamente.
+                </p>
+            </div>
+        );
     }
 
     return (
