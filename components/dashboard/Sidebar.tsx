@@ -21,6 +21,8 @@ import { PERMISSIONS, hasPermission } from "@/lib/utils/permissions";
 
 const menuItems = [
     { name: "Visão Geral", icon: LayoutDashboard, href: "/dashboard" }, // Public or basic access
+    { name: "Minhas Notas", icon: PieChart, href: "/dashboard/student/grades", role: "STUDENT" },
+    { name: "Lançar Notas", icon: GraduationCap, href: "/dashboard/teacher/grades", role: "TEACHER" },
     { name: "Acadêmico", icon: GraduationCap, href: "/dashboard/academic", permission: PERMISSIONS.ACADEMIC_ACCESS },
     { name: "Financeiro", icon: DollarSign, href: "/dashboard/financial", permission: PERMISSIONS.FINANCIAL_ACCESS },
     { name: "CRM", icon: Users, href: "/dashboard/crm", permission: PERMISSIONS.CRM_ACCESS },
@@ -41,6 +43,7 @@ export default function Sidebar({ userPermissions = [], userRole }: SidebarProps
     const isAdmin = userRole === 'ADMIN' || userRole === 'admin';
 
     const filteredItems = menuItems.filter(item => {
+        if (item.role && userRole !== item.role) return false;
         if (!item.permission) return true; // Always show if no permission required
         if (isAdmin) return true; // Admin sees everything
         return hasPermission(userPermissions, item.permission);

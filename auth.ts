@@ -52,6 +52,8 @@ declare module "next-auth" {
             id: string;
             tenantId: string;
             role: string;
+            teacherId?: string;
+            studentId?: string;
         } & DefaultSession["user"];
     }
 }

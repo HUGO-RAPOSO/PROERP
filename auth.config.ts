@@ -14,6 +14,8 @@ export const authConfig = {
                 token.id = user.id;
                 token.tenantId = (user as any).tenantId;
                 token.role = (user as any).role;
+                token.teacherId = (user as any).teacherId;
+                token.studentId = (user as any).studentId;
             }
             return token;
         },
@@ -22,6 +24,8 @@ export const authConfig = {
                 session.user.id = token.id as string;
                 session.user.tenantId = token.tenantId as string;
                 session.user.role = token.role as string;
+                session.user.teacherId = token.teacherId as string;
+                session.user.studentId = token.studentId as string;
             }
             return session;
         },

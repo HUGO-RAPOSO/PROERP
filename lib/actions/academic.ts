@@ -299,3 +299,101 @@ export async function getCourseDashboardData(courseId: string) {
         return { success: false, error: error.message };
     }
 }
+
+export async function getTeacherClasses(teacherId: string) {
+    const { data: classes, error } = await supabase
+        .from('Class')
+        .select(`
+            *,
+            subject:Subject (*),
+            course:Subject(course:Course(*))
+        `)
+        .eq('teacherId', teacherId);
+
+    if (error) {
+        console.error("Error fetching teacher classes:", error);
+        throw new Error(error.message);
+    }
+
+    return classes;
+}
+
+export async function getClassStudentsWithGrades(classId: string) {
+    const { data: enrollments, error } = await supabase
+        .from('Enrollment')
+        .select(`
+            id,
+            studentId,
+            student:Student (id, name),
+            grades:Grade (*)
+        `)
+        .eq('classId', classId);
+
+    if (error) {
+        console.error("Error fetching class students with grades:", error);
+        throw new Error(error.message);
+    }
+
+    return enrollments;
+}
+
+export async function saveGrade(data: {
+    enrollmentId: string;
+    value: number;
+    type: string;
+    tenantId: string;
+}) {
+    // Check if grade already exists for this type
+    const { data: existing } = await supabase
+        .from('Grade')
+        .select('id')
+        .eq('enrollmentId', data.enrollmentId)
+        .eq('type', data.type)
+        .single();
+
+    let result;
+    if (existing) {
+        result = await supabase
+            .from('Grade')
+            .update({ value: data.value })
+            .eq('id', existing.id);
+    } else {
+        result = await supabase
+            .from('Grade')
+            .insert(data);
+    }
+
+    if (result.error) {
+        console.error("Error saving grade:", result.error);
+        throw new Error(result.error.message);
+    }
+
+    return { success: true };
+}
+
+export async function getStudentGrades(studentId: string) {
+    const { data: enrollments, error } = await supabase
+        .from('Enrollment')
+        .select(`
+            id,
+            year,
+            class:Class (
+                id,
+                name,
+                subject:Subject (
+                    id,
+                    name,
+                    code
+                )
+            ),
+            grades:Grade (*)
+        `)
+        .eq('studentId', studentId);
+
+    if (error) {
+        console.error("Error fetching student grades:", error);
+        throw new Error(error.message);
+    }
+
+    return enrollments;
+}
