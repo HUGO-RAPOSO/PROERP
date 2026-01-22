@@ -28,7 +28,15 @@ export default function EnrollmentForm({ studentId, studentName, courseId, tenan
     const [loading, setLoading] = useState(false);
 
     // Filter subjects by student's course
-    const filteredSubjects = subjects.filter(sub => sub.courseId === courseId);
+    // Handle both courseId and course_id just in case, and be more lenient
+    const filteredSubjects = subjects.filter(sub => {
+        const subCourseId = sub.courseId || sub.course_id;
+        return subCourseId === courseId;
+    });
+
+    // If no filtered subjects, maybe show all as a fallback or for debugging
+    const subjectsToDisplay = filteredSubjects.length > 0 ? filteredSubjects : subjects;
+    const isFiltered = filteredSubjects.length > 0;
 
     const form = useForm<EnrollmentFormValues>({
         resolver: zodResolver(enrollmentSchema),
@@ -77,12 +85,17 @@ export default function EnrollmentForm({ studentId, studentName, courseId, tenan
             <div className="space-y-3">
                 <label className="text-sm font-bold text-gray-700 flex justify-between items-center">
                     Selecione as Disciplinas
-                    <span className="text-xs font-normal text-gray-500">Filtrado por curso</span>
+                    <div className="flex gap-2">
+                        {courseId && <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-400 font-mono">ID: {courseId.slice(0, 8)}</span>}
+                        <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${isFiltered ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                            {isFiltered ? 'Filtrado por Curso' : 'Mostrando Todas (Sem Filtro)'}
+                        </span>
+                    </div>
                 </label>
 
                 <div className="max-h-[300px] overflow-y-auto border border-gray-100 rounded-2xl p-2 space-y-1 bg-gray-50/50">
-                    {filteredSubjects.length > 0 ? (
-                        filteredSubjects.map((sub) => {
+                    {subjectsToDisplay.length > 0 ? (
+                        subjectsToDisplay.map((sub) => {
                             const isSelected = form.watch("subjectIds").includes(sub.id);
                             return (
                                 <div
@@ -134,7 +147,7 @@ export default function EnrollmentForm({ studentId, studentName, courseId, tenan
             <div className="pt-4">
                 <button
                     type="submit"
-                    disabled={loading || filteredSubjects.length === 0}
+                    disabled={loading || subjectsToDisplay.length === 0}
                     className="w-full py-4 bg-primary-600 text-white rounded-2xl font-bold hover:bg-primary-700 shadow-lg shadow-primary-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                     {loading && <Loader2 className="w-5 h-5 animate-spin" />}
