@@ -21,7 +21,10 @@ export default async function AcademicPage() {
             course:Course (*),
             enrollments:Enrollment (
                 *,
-                class:Class (*)
+                subject:Subject (
+                    *,
+                    course:Course (name)
+                )
             )
         `)
         .eq('tenantId', tenantId)
