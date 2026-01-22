@@ -80,14 +80,23 @@ export default function StudentList({ students, courses, subjects }: StudentList
                                 </td>
                                 <td className="px-8 py-5">
                                     <div className="flex flex-col gap-1">
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit">
                                             <BookOpen className="w-3 h-3" />
                                             {student.course?.name || "Não Definido"}
                                         </span>
-                                        {student.enrollments[0] && (
-                                            <span className="text-[10px] text-gray-400 font-medium ml-1">
-                                                Cadeira: {student.enrollments[0].subject.name}
-                                            </span>
+                                        {student.enrollments.length > 0 && (
+                                            <div className="flex flex-col gap-1 mt-1 ml-1">
+                                                <span className="text-[10px] text-primary-600 font-bold">
+                                                    {student.enrollments.length} {student.enrollments.length === 1 ? 'Cadeira' : 'Cadeiras'}
+                                                </span>
+                                                <div className="flex flex-wrap gap-1 max-w-[240px]">
+                                                    {student.enrollments.map((en, idx) => (
+                                                        <span key={idx} className="text-[9px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-md border border-gray-200/50">
+                                                            {en.subject.name}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
                                 </td>

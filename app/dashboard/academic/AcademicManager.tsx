@@ -8,8 +8,6 @@ import ClassForm from "@/components/modals/ClassForm";
 import CourseManager from "./CourseManager";
 import ClassGrid from "@/components/academic/ClassGrid";
 import StudentList from "@/components/academic/StudentList";
-import KPICard from "@/components/dashboard/KPICard";
-import { Users, GraduationCap, School, Layers } from "lucide-react";
 
 interface AcademicManagerProps {
     tenantId: string;
@@ -75,38 +73,6 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
                         )}
                         {/* We can add actions for Courses tab here if needed */}
                     </div>
-                </div>
-
-                {/* Overview Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <KPICard
-                        title="Total de Alunos"
-                        value={students.length.toString()}
-                        icon={Users}
-                        trend="+5%"
-                        color="blue"
-                    />
-                    <KPICard
-                        title="Total de Turmas"
-                        value={classes.length.toString()}
-                        icon={School}
-                        trend="+2"
-                        color="purple"
-                    />
-                    <KPICard
-                        title="Total de Cadeiras"
-                        value={subjects.length.toString()}
-                        icon={GraduationCap}
-                        trend="+12%"
-                        color="green"
-                    />
-                    <KPICard
-                        title="Total de Cursos"
-                        value={courses.length.toString()}
-                        icon={Layers}
-                        trend="Estável"
-                        color="orange"
-                    />
                 </div>
             </div>
 
