@@ -175,6 +175,7 @@ export default function StudentList({ students, courses, subjects }: StudentList
                     <EnrollmentForm
                         studentId={enrollingStudent.id}
                         studentName={enrollingStudent.name}
+                        courseId={enrollingStudent.courseId}
                         tenantId={enrollingStudent.tenantId}
                         subjects={subjects}
                         onSuccess={() => setEnrollingStudent(null)}

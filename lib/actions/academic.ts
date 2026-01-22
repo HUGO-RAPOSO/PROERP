@@ -450,3 +450,30 @@ export async function createEnrollment(data: {
     revalidatePath("/dashboard/academic");
     return enrollment;
 }
+export async function enrollStudentInSubjects(data: {
+    studentId: string;
+    subjectIds: string[];
+    year: number;
+    tenantId: string;
+}) {
+    const enrollments = data.subjectIds.map(subjectId => ({
+        studentId: data.studentId,
+        subjectId: subjectId,
+        year: data.year,
+        tenantId: data.tenantId,
+        status: 'ACTIVE'
+    }));
+
+    const { data: inserted, error } = await supabase
+        .from('Enrollment')
+        .insert(enrollments)
+        .select();
+
+    if (error) {
+        console.error("Error batch enrolling student:", error);
+        throw new Error(error.message);
+    }
+
+    revalidatePath("/dashboard/academic");
+    return inserted;
+}
