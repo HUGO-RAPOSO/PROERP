@@ -6,6 +6,7 @@ import { useState } from "react";
 import { deleteStudent } from "@/lib/actions/academic";
 import BaseModal from "@/components/modals/BaseModal";
 import StudentForm from "@/components/modals/StudentForm";
+import EnrollmentForm from "@/components/modals/EnrollmentForm";
 
 interface Student {
     id: string;
@@ -28,10 +29,12 @@ interface Student {
 interface StudentListProps {
     students: Student[];
     courses: { id: string; name: string }[];
+    classes: any[];
 }
 
-export default function StudentList({ students, courses }: StudentListProps) {
+export default function StudentList({ students, courses, classes }: StudentListProps) {
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+    const [enrollingStudent, setEnrollingStudent] = useState<Student | null>(null);
     const [loading, setLoading] = useState<string | null>(null);
 
     async function handleDelete(id: string) {
@@ -107,6 +110,13 @@ export default function StudentList({ students, courses }: StudentListProps) {
                                 <td className="px-8 py-5 text-right">
                                     <div className="flex justify-end gap-2">
                                         <button
+                                            onClick={() => setEnrollingStudent(student)}
+                                            className="p-2 hover:bg-green-50 text-gray-400 hover:text-green-600 rounded-lg transition-all"
+                                            title="Matricular em Turma"
+                                        >
+                                            <BookOpen className="w-4 h-4" />
+                                        </button>
+                                        <button
                                             onClick={() => setEditingStudent(student)}
                                             className="p-2 hover:bg-primary-50 text-gray-400 hover:text-primary-600 rounded-lg transition-all"
                                         >
@@ -152,6 +162,22 @@ export default function StudentList({ students, courses }: StudentListProps) {
                             phone: editingStudent.phone || "",
                             courseId: editingStudent.courseId || ""
                         }}
+                    />
+                )}
+            </BaseModal>
+
+            <BaseModal
+                isOpen={!!enrollingStudent}
+                onClose={() => setEnrollingStudent(null)}
+                title="Matricular Aluno em Turma"
+            >
+                {enrollingStudent && (
+                    <EnrollmentForm
+                        studentId={enrollingStudent.id}
+                        studentName={enrollingStudent.name}
+                        tenantId={enrollingStudent.tenantId}
+                        classes={classes}
+                        onSuccess={() => setEnrollingStudent(null)}
                     />
                 )}
             </BaseModal>

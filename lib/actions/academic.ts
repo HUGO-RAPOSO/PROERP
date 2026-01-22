@@ -417,3 +417,27 @@ export async function getStudentGrades(studentId: string) {
 
     return enrollments;
 }
+
+export async function createEnrollment(data: {
+    studentId: string;
+    classId: string;
+    year: number;
+    tenantId: string;
+}) {
+    const { data: enrollment, error } = await supabase
+        .from('Enrollment')
+        .insert({
+            ...data,
+            status: 'ACTIVE'
+        })
+        .select()
+        .single();
+
+    if (error) {
+        console.error("Error creating enrollment:", error);
+        throw new Error(error.message);
+    }
+
+    revalidatePath("/dashboard/academic");
+    return enrollment;
+}

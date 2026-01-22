@@ -104,7 +104,7 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
                                 </h3>
                                 <button className="text-sm font-semibold text-primary-600 hover:text-primary-700">Ver Relatórios</button>
                             </div>
-                            <StudentList students={students} courses={courses} />
+                            <StudentList students={students} courses={courses} classes={classes} />
                         </section>
                     </div>
                 )}
