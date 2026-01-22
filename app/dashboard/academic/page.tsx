@@ -52,7 +52,7 @@ export default async function AcademicPage() {
             *,
             subjects:Subject (*)
         `)
-        .eq('tenantId', tenantId)
+        .or(`tenantId.eq.${tenantId},tenantId.is.null`)
         .order('name', { ascending: true });
 
     // Format courses to include counts
@@ -70,7 +70,7 @@ export default async function AcademicPage() {
     const { data: subjects } = await supabase
         .from('Subject')
         .select('*, course:Course(name)')
-        .eq('tenantId', tenantId);
+        .or(`tenantId.eq.${tenantId},tenantId.is.null`);
 
     return (
         <AcademicManager
