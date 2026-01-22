@@ -64,6 +64,11 @@ export default async function AcademicPage() {
     // Extract unique teachers from classes
     const { data: teachers } = await supabase.from('Teacher').select('*').eq('tenantId', tenantId);
 
+    const { data: subjects } = await supabase
+        .from('Subject')
+        .select('*, course:Course(name)')
+        .eq('tenantId', tenantId);
+
     return (
         <AcademicManager
             tenantId={tenantId}
@@ -71,6 +76,7 @@ export default async function AcademicPage() {
             courses={formattedCourses}
             classes={formattedClasses || []}
             students={students || []}
+            subjects={subjects || []}
         />
     );
 }

@@ -15,9 +15,10 @@ interface AcademicManagerProps {
     courses: any[];
     classes: any[];
     students: any[];
+    subjects: any[];
 }
 
-export default function AcademicManager({ tenantId, teachers, courses, classes, students }: AcademicManagerProps) {
+export default function AcademicManager({ tenantId, teachers, courses, classes, students, subjects }: AcademicManagerProps) {
     const [activeTab, setActiveTab] = useState<"CLASSES" | "COURSES">("CLASSES");
     const [isStudentOpen, setIsStudentOpen] = useState(false);
     const [isClassOpen, setIsClassOpen] = useState(false);
@@ -104,7 +105,7 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
                                 </h3>
                                 <button className="text-sm font-semibold text-primary-600 hover:text-primary-700">Ver Relatórios</button>
                             </div>
-                            <StudentList students={students} courses={courses} classes={classes} />
+                            <StudentList students={students} courses={courses} subjects={subjects} />
                         </section>
                     </div>
                 )}

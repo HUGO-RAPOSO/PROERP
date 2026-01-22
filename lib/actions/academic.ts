@@ -339,6 +339,19 @@ export async function getTeacherClasses(teacherId: string) {
 }
 
 export async function getClassStudentsWithGrades(classId: string) {
+    // 1. First get the subjectId for this class
+    const { data: cls, error: classError } = await supabase
+        .from('Class')
+        .select('subjectId')
+        .eq('id', classId)
+        .single();
+
+    if (classError || !cls) {
+        console.error("Error fetching class subject:", classError);
+        return [];
+    }
+
+    // 2. Fetch all enrollments for this specific Subject
     const { data: enrollments, error } = await supabase
         .from('Enrollment')
         .select(`
@@ -347,7 +360,7 @@ export async function getClassStudentsWithGrades(classId: string) {
             student:Student (id, name),
             grades:Grade (*)
         `)
-        .eq('classId', classId);
+        .eq('subjectId', cls.subjectId);
 
     if (error) {
         console.error("Error fetching class students with grades:", error);
@@ -397,14 +410,10 @@ export async function getStudentGrades(studentId: string) {
         .select(`
             id,
             year,
-            class:Class (
+            subject:Subject (
                 id,
                 name,
-                subject:Subject (
-                    id,
-                    name,
-                    code
-                )
+                code
             ),
             grades:Grade (*)
         `)
@@ -420,7 +429,7 @@ export async function getStudentGrades(studentId: string) {
 
 export async function createEnrollment(data: {
     studentId: string;
-    classId: string;
+    subjectId: string;
     year: number;
     tenantId: string;
 }) {

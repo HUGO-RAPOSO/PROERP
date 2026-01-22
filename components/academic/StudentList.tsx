@@ -20,7 +20,7 @@ interface Student {
         name: string;
     };
     enrollments: {
-        class: {
+        subject: {
             name: string;
         };
     }[];
@@ -29,10 +29,10 @@ interface Student {
 interface StudentListProps {
     students: Student[];
     courses: { id: string; name: string }[];
-    classes: any[];
+    subjects: any[];
 }
 
-export default function StudentList({ students, courses, classes }: StudentListProps) {
+export default function StudentList({ students, courses, subjects }: StudentListProps) {
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
     const [enrollingStudent, setEnrollingStudent] = useState<Student | null>(null);
     const [loading, setLoading] = useState<string | null>(null);
@@ -86,7 +86,7 @@ export default function StudentList({ students, courses, classes }: StudentListP
                                         </span>
                                         {student.enrollments[0] && (
                                             <span className="text-[10px] text-gray-400 font-medium ml-1">
-                                                Turma: {student.enrollments[0].class.name}
+                                                Cadeira: {student.enrollments[0].subject.name}
                                             </span>
                                         )}
                                     </div>
@@ -169,14 +169,14 @@ export default function StudentList({ students, courses, classes }: StudentListP
             <BaseModal
                 isOpen={!!enrollingStudent}
                 onClose={() => setEnrollingStudent(null)}
-                title="Matricular Aluno em Turma"
+                title="Matricular Aluno em Cadeira"
             >
                 {enrollingStudent && (
                     <EnrollmentForm
                         studentId={enrollingStudent.id}
                         studentName={enrollingStudent.name}
                         tenantId={enrollingStudent.tenantId}
-                        classes={classes}
+                        subjects={subjects}
                         onSuccess={() => setEnrollingStudent(null)}
                     />
                 )}

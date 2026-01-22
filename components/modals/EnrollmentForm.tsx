@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 const enrollmentSchema = z.object({
-    classId: z.string().min(1, "A turma é obrigatória"),
+    subjectId: z.string().min(1, "A disciplina é obrigatória"),
     year: z.number().min(2000, "Ano inválido").max(2100, "Ano inválido"),
 });
 
@@ -19,17 +19,17 @@ interface EnrollmentFormProps {
     studentId: string;
     studentName: string;
     tenantId: string;
-    classes: any[];
+    subjects: any[];
     onSuccess: () => void;
 }
 
-export default function EnrollmentForm({ studentId, studentName, tenantId, classes, onSuccess }: EnrollmentFormProps) {
+export default function EnrollmentForm({ studentId, studentName, tenantId, subjects, onSuccess }: EnrollmentFormProps) {
     const [loading, setLoading] = useState(false);
 
     const form = useForm<EnrollmentFormValues>({
         resolver: zodResolver(enrollmentSchema),
         defaultValues: {
-            classId: "",
+            subjectId: "",
             year: new Date().getFullYear(),
         },
     });
@@ -62,20 +62,20 @@ export default function EnrollmentForm({ studentId, studentName, tenantId, class
             </div>
 
             <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Selecione a Turma</label>
+                <label className="text-sm font-bold text-gray-700">Selecione a Disciplina</label>
                 <select
-                    {...form.register("classId")}
+                    {...form.register("subjectId")}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all appearance-none"
                 >
-                    <option value="">Selecione a turma...</option>
-                    {classes.map((cls) => (
-                        <option key={cls.id} value={cls.id}>
-                            {cls.subject?.name} ({cls.subject?.course?.name} - {cls.subject?.year}º Ano)
+                    <option value="">Selecione a disciplina...</option>
+                    {subjects.map((sub) => (
+                        <option key={sub.id} value={sub.id}>
+                            {sub.name} ({sub.course?.name} - {sub.year}º Ano)
                         </option>
                     ))}
                 </select>
-                {form.formState.errors.classId && (
-                    <p className="text-xs text-red-500 font-medium">{form.formState.errors.classId.message}</p>
+                {form.formState.errors.subjectId && (
+                    <p className="text-xs text-red-500 font-medium">{form.formState.errors.subjectId.message}</p>
                 )}
             </div>
 
