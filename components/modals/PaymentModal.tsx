@@ -5,7 +5,7 @@ import { Loader2, CreditCard, Tag, Landmark, FileUp, X, CheckCircle } from "luci
 import BaseModal from "@/components/modals/BaseModal";
 import { formatCurrency } from "@/lib/utils";
 import { payTuition } from "@/lib/actions/tuition";
-import { uploadFile } from "@/lib/storage";
+import { uploadFileAdmin } from "@/lib/actions/storage-actions";
 
 interface PaymentModalProps {
     isOpen: boolean;
@@ -42,8 +42,11 @@ export default function PaymentModal({ isOpen, onClose, tuition, categories, acc
         try {
             let slipUrl = "";
             if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
                 const path = `tuitions/${tenantId}/${tuition.id}_${Date.now()}_${file.name}`;
-                const uploadResult = await uploadFile(file, path);
+                const uploadResult = await uploadFileAdmin(formData, path);
                 if (uploadResult.success) {
                     slipUrl = uploadResult.path || "";
                 } else {

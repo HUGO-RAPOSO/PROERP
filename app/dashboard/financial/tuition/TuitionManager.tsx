@@ -5,7 +5,7 @@ import { Plus, Loader2, Calendar, CreditCard, User, Tag, Landmark, AlertCircle, 
 import Link from "next/link";
 import BaseModal from "@/components/modals/BaseModal";
 import { generateMonthlyTuition, createIndividualTuition } from "@/lib/actions/tuition";
-import { uploadFile } from "@/lib/storage";
+import { uploadFileAdmin } from "@/lib/actions/storage-actions";
 
 interface Student {
     id: string;
@@ -103,8 +103,11 @@ export default function TuitionManager({ tenantId, students, categories, account
         try {
             let slipUrl = "";
             if (status === 'PAID' && file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
                 const path = `tuitions/${tenantId}/manual_${Date.now()}_${file.name}`;
-                const uploadResult = await uploadFile(file, path);
+                const uploadResult = await uploadFileAdmin(formData, path);
                 if (uploadResult.success) {
                     slipUrl = uploadResult.path || "";
                 } else {
