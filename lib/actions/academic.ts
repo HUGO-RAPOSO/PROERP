@@ -1,6 +1,7 @@
 "use server";
 
 import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 
@@ -493,6 +494,24 @@ export async function enrollStudentInSubjects(data: {
     revalidatePath("/dashboard/academic");
     return inserted;
 }
+
+export async function createStudentDocuments(documents: {
+    studentId: string;
+    type: string;
+    url: string;
+    tenantId: string;
+}[]) {
+    const { error } = await supabaseAdmin
+        .from('StudentDocument')
+        .insert(documents);
+
+    if (error) {
+        console.error("Error creating student documents:", error);
+        throw new Error(error.message);
+    }
+
+    return { success: true };
+}
 export async function getStudentFullProfile(studentId: string) {
     try {
         // 1. Fetch Student with Course
@@ -526,6 +545,12 @@ export async function getStudentFullProfile(studentId: string) {
             .eq('studentId', studentId)
             .order('dueDate', { ascending: false });
 
+        // 4. Fetch Student Documents
+        const { data: documents } = await supabase
+            .from('StudentDocument')
+            .select('*')
+            .eq('studentId', studentId);
+
         // Note: Tuitions might not exist if financial module hasn't generated them yet
         // but we want to return what we have.
 
@@ -533,7 +558,8 @@ export async function getStudentFullProfile(studentId: string) {
             success: true,
             student,
             enrollments: enrollments || [],
-            tuitions: tuitions || []
+            tuitions: tuitions || [],
+            documents: documents || []
         };
     } catch (error: any) {
         console.error("Error fetching student full profile:", error);

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { createStudent, updateStudent } from "@/lib/actions/academic";
+import { createStudent, updateStudent, createStudentDocuments } from "@/lib/actions/academic";
 import { useState } from "react";
 import { Loader2, FileUp, X, CreditCard, User as UserIcon } from "lucide-react";
 import { uploadFileAdmin } from "@/lib/actions/storage-actions";
@@ -27,7 +27,9 @@ interface StudentModalProps {
 
 export default function StudentForm({ tenantId, onSuccess, initialData, courses }: StudentModalProps) {
     const [loading, setLoading] = useState(false);
-    const [studentDoc, setStudentDoc] = useState<File | null>(null);
+    const [extraDocs, setExtraDocs] = useState<{ type: string, file: File | null }[]>([
+        { type: "BI/Passaporte", file: null }
+    ]);
     const [enrollmentSlip, setEnrollmentSlip] = useState<File | null>(null);
 
     const form = useForm<StudentFormValues>({
@@ -44,17 +46,9 @@ export default function StudentForm({ tenantId, onSuccess, initialData, courses 
     async function onSubmit(values: StudentFormValues) {
         setLoading(true);
         try {
-            let documentUrl = "";
             let enrollmentSlipUrl = "";
 
-            if (studentDoc) {
-                const formData = new FormData();
-                formData.append('file', studentDoc);
-                const path = `students/${tenantId}/docs_${Date.now()}_${studentDoc.name}`;
-                const res = await uploadFileAdmin(formData, path);
-                if (res.success) documentUrl = res.path || "";
-            }
-
+            // 1. Upload Enrollment Slip
             if (enrollmentSlip) {
                 const formData = new FormData();
                 formData.append('file', enrollmentSlip);
@@ -63,23 +57,48 @@ export default function StudentForm({ tenantId, onSuccess, initialData, courses 
                 if (res.success) enrollmentSlipUrl = res.path || "";
             }
 
+            // 2. Create/Update Student
+            let studentId = initialData?.id;
             if (initialData) {
                 await updateStudent(initialData.id, {
                     ...values,
-                    documentUrl: documentUrl || undefined,
                     enrollmentSlipUrl: enrollmentSlipUrl || undefined
                 } as any);
             } else {
-                await createStudent({
+                const student = await createStudent({
                     ...values,
                     tenantId,
-                    documentUrl,
                     enrollmentSlipUrl
                 });
+                studentId = student.id;
             }
+
+            // 3. Upload and save Extra Documents
+            const docsToSave = [];
+            for (const doc of extraDocs) {
+                if (doc.file && studentId) {
+                    const formData = new FormData();
+                    formData.append('file', doc.file);
+                    const path = `students/${tenantId}/doc_${Date.now()}_${doc.file.name}`;
+                    const res = await uploadFileAdmin(formData, path);
+                    if (res.success) {
+                        docsToSave.push({
+                            studentId: studentId,
+                            type: doc.type,
+                            url: res.path || "",
+                            tenantId: tenantId
+                        });
+                    }
+                }
+            }
+
+            if (docsToSave.length > 0) {
+                await createStudentDocuments(docsToSave);
+            }
+
             onSuccess();
             form.reset();
-            setStudentDoc(null);
+            setExtraDocs([{ type: "BI/Passaporte", file: null }]);
             setEnrollmentSlip(null);
         } catch (error) {
             console.error(error);
@@ -88,6 +107,14 @@ export default function StudentForm({ tenantId, onSuccess, initialData, courses 
             setLoading(false);
         }
     }
+
+    const addDoc = () => setExtraDocs([...extraDocs, { type: "", file: null }]);
+    const removeDoc = (index: number) => setExtraDocs(extraDocs.filter((_, i) => i !== index));
+    const updateDoc = (index: number, data: Partial<{ type: string, file: File | null }>) => {
+        const newDocs = [...extraDocs];
+        newDocs[index] = { ...newDocs[index], ...data };
+        setExtraDocs(newDocs);
+    };
 
     return (
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -147,37 +174,91 @@ export default function StudentForm({ tenantId, onSuccess, initialData, courses 
             <div className="space-y-4">
                 <h4 className="text-xs font-black text-primary-600 uppercase tracking-widest border-b border-primary-100 pb-2">Documentação e Matrícula</h4>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700">Documento do Aluno (BI/Passaporte)</label>
-                        {!studentDoc ? (
-                            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 hover:bg-gray-100/50 hover:border-primary-300 transition-all cursor-pointer group">
-                                <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
-                                    <FileUp className="w-6 h-6 text-gray-400 group-hover:text-primary-600 mb-2" />
-                                    <p className="text-[10px] font-bold text-gray-500 uppercase">Anexar Documento</p>
-                                </div>
-                                <input
-                                    type="file"
-                                    className="hidden"
-                                    accept="image/*,.pdf"
-                                    onChange={(e) => setStudentDoc(e.target.files?.[0] || null)}
-                                />
-                            </label>
-                        ) : (
-                            <div className="flex items-center gap-3 p-4 bg-primary-50 border border-primary-100 rounded-2xl">
-                                <FileUp className="w-5 h-5 text-primary-600" />
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-bold text-primary-900 truncate">{studentDoc.name}</p>
-                                </div>
-                                <button onClick={() => setStudentDoc(null)} className="p-2 hover:bg-white rounded-xl transition-colors text-primary-400 hover:text-red-500">
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-                        )}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <label className="text-sm font-bold text-gray-700">Documentos do Aluno</label>
+                        <button
+                            type="button"
+                            onClick={addDoc}
+                            className="text-[10px] font-black text-primary-600 uppercase hover:text-primary-700"
+                        >
+                            + Adicionar Documento
+                        </button>
                     </div>
 
+                    <div className="space-y-3">
+                        {extraDocs.map((doc, index) => (
+                            <div key={index} className="p-4 bg-gray-50 border border-gray-200 rounded-2xl space-y-3 relative group/doc">
+                                {extraDocs.length > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => removeDoc(index)}
+                                        className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                )}
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tipo de Documento</label>
+                                    <select
+                                        value={doc.type}
+                                        onChange={(e) => updateDoc(index, { type: e.target.value })}
+                                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary-500/20"
+                                    >
+                                        <option value="">Selecione o tipo...</option>
+                                        <option value="BI/Passaporte">BI / Passaporte</option>
+                                        <option value="Certificado">Certificado de Habilitações</option>
+                                        <option value="Atestado">Atestado Médico</option>
+                                        <option value="Foto">Fotografias</option>
+                                        <option value="Outro">Outro</option>
+                                    </select>
+                                    {doc.type === "Outro" && (
+                                        <input
+                                            type="text"
+                                            placeholder="Especifique o tipo..."
+                                            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold mt-2"
+                                            onChange={(e) => updateDoc(index, { type: e.target.value })}
+                                        />
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    {!doc.file ? (
+                                        <label className="flex items-center justify-center w-full p-4 border-2 border-dashed border-gray-200 rounded-xl bg-white hover:bg-primary-50 hover:border-primary-200 transition-all cursor-pointer text-center">
+                                            <div className="flex items-center gap-2">
+                                                <FileUp className="w-4 h-4 text-gray-400" />
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">Anexar Ficheiro</span>
+                                            </div>
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                accept="image/*,.pdf"
+                                                onChange={(e) => updateDoc(index, { file: e.target.files?.[0] || null })}
+                                            />
+                                        </label>
+                                    ) : (
+                                        <div className="flex items-center gap-3 p-3 bg-primary-50 border border-primary-100 rounded-xl">
+                                            <FileUp className="w-4 h-4 text-primary-600" />
+                                            <p className="flex-1 text-[10px] font-bold text-primary-900 truncate">{doc.file.name}</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => updateDoc(index, { file: null })}
+                                                className="text-primary-400 hover:text-red-500"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700">Comprovativo de Depósito</label>
+                        <label className="text-sm font-bold text-gray-700">Comprovativo de Depósito (Matrícula)</label>
                         {!enrollmentSlip ? (
                             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 hover:bg-gray-100/50 hover:border-primary-300 transition-all cursor-pointer group">
                                 <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
@@ -203,17 +284,19 @@ export default function StudentForm({ tenantId, onSuccess, initialData, courses 
                             </div>
                         )}
                     </div>
-                </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700">Número do Talão de Matrícula</label>
-                    <div className="relative">
-                        <CreditCard className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" />
-                        <input
-                            {...form.register("enrollmentSlipNumber")}
-                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
-                            placeholder="Ex: 12345678"
-                        />
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-gray-700">Número do Talão</label>
+                            <div className="relative">
+                                <CreditCard className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" />
+                                <input
+                                    {...form.register("enrollmentSlipNumber")}
+                                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
+                                    placeholder="Ex: 12345678"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

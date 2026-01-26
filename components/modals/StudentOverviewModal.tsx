@@ -46,7 +46,7 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
         );
     }
 
-    const { student, enrollments, tuitions } = data;
+    const { student, enrollments, tuitions, documents } = data;
 
     return (
         <div className="space-y-6">
@@ -131,37 +131,45 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
                             <div className="space-y-4">
                                 <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Documentação de Matrícula</h4>
                                 <div className="grid grid-cols-1 gap-3">
-                                    {student.documentUrl && (
-                                        <a
-                                            href={getPublicUrl(student.documentUrl)}
-                                            target="_blank"
-                                            className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-primary-300 hover:shadow-sm transition-all"
-                                        >
-                                            <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600">
-                                                <FileText className="w-4 h-4" />
-                                            </div>
-                                            <span className="text-sm font-bold text-gray-700">Documento de Identificação</span>
-                                        </a>
-                                    )}
+                                    {/* Primary Enrollment Slip */}
                                     {student.enrollmentSlipUrl && (
                                         <a
                                             href={getPublicUrl(student.enrollmentSlipUrl)}
                                             target="_blank"
-                                            className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-primary-300 hover:shadow-sm transition-all"
+                                            className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-primary-300 hover:shadow-sm transition-all shadow-sm"
                                         >
                                             <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
                                                 <CreditCard className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <span className="text-sm font-bold text-gray-700 block">Comprovativo de Matrícula</span>
+                                                <span className="text-sm font-bold text-gray-700 block line-height-tight">Comprovativo de Matrícula</span>
                                                 {student.enrollmentSlipNumber && (
-                                                    <span className="text-[10px] text-gray-400 font-bold uppercase">Talão: {student.enrollmentSlipNumber}</span>
+                                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Talão: {student.enrollmentSlipNumber}</span>
                                                 )}
                                             </div>
                                         </a>
                                     )}
-                                    {!student.documentUrl && !student.enrollmentSlipUrl && (
-                                        <p className="text-xs text-gray-400 italic py-2">Nenhum documento anexado na matrícula.</p>
+
+                                    {/* List of Other Documents */}
+                                    {documents?.map((doc: any) => (
+                                        <a
+                                            key={doc.id}
+                                            href={getPublicUrl(doc.url)}
+                                            target="_blank"
+                                            className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-primary-300 hover:shadow-sm transition-all shadow-sm"
+                                        >
+                                            <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600">
+                                                <FileText className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <span className="text-sm font-bold text-gray-700 block">{doc.type}</span>
+                                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Anexado em {new Date(doc.createdAt).toLocaleDateString('pt-BR')}</span>
+                                            </div>
+                                        </a>
+                                    ))}
+
+                                    {(!student.enrollmentSlipUrl && (!documents || documents.length === 0)) && (
+                                        <p className="text-xs text-gray-400 italic py-2">Nenhum documento anexado.</p>
                                     )}
                                 </div>
 

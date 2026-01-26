@@ -116,6 +116,12 @@ CREATE TABLE IF NOT EXISTS "Course" (
     type TEXT,
     duration INTEGER,
     "periodType" TEXT,
+    "price" NUMERIC DEFAULT 0,
+    "enrollmentFee" NUMERIC DEFAULT 0,
+    "paymentStartDay" INTEGER DEFAULT 1,
+    "paymentEndDay" INTEGER DEFAULT 10,
+    "lateFeeValue" NUMERIC DEFAULT 0,
+    "lateFeeType" TEXT DEFAULT 'FIXED',
     "tenantId" UUID REFERENCES "Tenant"(id) ON DELETE CASCADE
 );
 
@@ -139,8 +145,22 @@ CREATE TABLE IF NOT EXISTS "Student" (
     email TEXT,
     phone TEXT,
     status TEXT DEFAULT 'ACTIVE',
+    "enrollmentSlipUrl" TEXT,
+    "enrollmentSlipNumber" TEXT,
+    "courseId" UUID REFERENCES "Course"(id) ON DELETE SET NULL,
     "tenantId" UUID REFERENCES "Tenant"(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS "StudentDocument" (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "studentId" UUID REFERENCES "Student"(id) ON DELETE CASCADE,
+    "type" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "tenantId" UUID REFERENCES "Tenant"(id) ON DELETE CASCADE,
+    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS "idx_student_document_student" ON "StudentDocument"("studentId");
 
 CREATE TABLE IF NOT EXISTS "Class" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
