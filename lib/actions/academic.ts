@@ -418,7 +418,10 @@ export async function getStudentGrades(studentId: string) {
             subject:Subject (
                 id,
                 name,
-                code
+                code,
+                examWaiverPossible,
+                waiverGrade,
+                exclusionGrade
             ),
             grades:Grade (*)
         `)

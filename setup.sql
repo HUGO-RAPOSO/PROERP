@@ -126,6 +126,9 @@ CREATE TABLE IF NOT EXISTS "Subject" (
     year INTEGER,
     semester INTEGER,
     credits INTEGER,
+    "examWaiverPossible" BOOLEAN DEFAULT true,
+    "waiverGrade" NUMERIC DEFAULT 14,
+    "exclusionGrade" NUMERIC DEFAULT 7,
     "courseId" UUID REFERENCES "Course"(id) ON DELETE CASCADE,
     "tenantId" UUID REFERENCES "Tenant"(id) ON DELETE CASCADE
 );
