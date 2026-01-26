@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { getStudentFullProfile } from "@/lib/actions/academic";
-import { Loader2, User, BookOpen, CreditCard, Calendar, CheckCircle, AlertCircle, TrendingUp } from "lucide-react";
+import { Loader2, User, BookOpen, CreditCard, Calendar, CheckCircle, AlertCircle, TrendingUp, FileText } from "lucide-react";
+import { getPublicUrl } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
 interface StudentOverviewModalProps {
@@ -75,7 +76,7 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
                         <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">Financeiro</span>
                     </div>
                     <p className="text-xl font-bold text-gray-900">
-                        {tuitions.filter((t: any) => t.status === 'PENDING').length} Pendentes
+                        {tuitions.filter((t: any) => t.status === 'PENDING' || t.status === 'OVERDUE').length} Pendentes
                     </p>
                 </div>
             </div>
@@ -132,7 +133,7 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
                                 <div className="p-4 bg-primary-600 rounded-2xl text-white shadow-lg shadow-primary-500/20">
                                     <p className="text-xs font-bold text-primary-100 uppercase mb-2">Sugestão do Sistema</p>
                                     <p className="text-sm leading-relaxed">
-                                        O aluno está com {tuitions.filter((t: any) => t.status === 'PENDING').length} pagamentos pendentes.
+                                        O aluno está com {tuitions.filter((t: any) => t.status === 'PENDING' || t.status === 'OVERDUE').length} pagamentos pendentes.
                                         Considere enviar um lembrete via e-mail.
                                     </p>
                                 </div>
@@ -207,6 +208,8 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
                                         <th className="px-6 py-4">Valor</th>
                                         <th className="px-6 py-4">Status</th>
                                         <th className="px-6 py-4">Data Pagto</th>
+                                        <th className="px-6 py-4">Conta</th>
+                                        <th className="px-6 py-4">Doc</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -229,6 +232,23 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-500">
                                                 {t.paidDate ? new Date(t.paidDate).toLocaleDateString('pt-BR') : '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500">
+                                                {t.account?.name || '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm">
+                                                {t.depositSlipUrl ? (
+                                                    <a
+                                                        href={getPublicUrl(t.depositSlipUrl)}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-primary-600 hover:text-primary-800 flex items-center gap-1 font-bold"
+                                                        title={`Talão: ${t.depositSlipNumber || 'N/A'}`}
+                                                    >
+                                                        <FileText className="w-4 h-4" />
+                                                        Ver
+                                                    </a>
+                                                ) : '-'}
                                             </td>
                                         </tr>
                                     )) : (

@@ -516,7 +516,7 @@ export async function getStudentFullProfile(studentId: string) {
         // 3. Fetch Tuitions (Financials)
         const { data: tuitions, error: tuitionError } = await supabase
             .from('Tuition')
-            .select('*')
+            .select('*, account:Account(name)')
             .eq('studentId', studentId)
             .order('dueDate', { ascending: false });
 

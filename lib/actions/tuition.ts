@@ -100,9 +100,17 @@ export async function payTuition(
         const now = new Date();
         const currentDay = now.getDate();
         const endDay = tuition.course?.paymentEndDay || 10;
+        const dueDate = new Date(tuition.dueDate);
 
-        // If today is after the end day of the payment period
-        if (currentDay > endDay) {
+        // A tuition is overdue if today is after the endDay of the month/year of the due date
+        // OR if it's already past the due month.
+        const isOverdue = (
+            (now.getFullYear() > dueDate.getFullYear()) ||
+            (now.getFullYear() === dueDate.getFullYear() && now.getMonth() > dueDate.getMonth()) ||
+            (now.getFullYear() === dueDate.getFullYear() && now.getMonth() === dueDate.getMonth() && currentDay > endDay)
+        );
+
+        if (isOverdue) {
             const feeValue = Number(tuition.course?.lateFeeValue || 0);
             const feeType = tuition.course?.lateFeeType || 'PERCENTAGE';
 
@@ -234,7 +242,7 @@ export async function getStudentFinancialSummaries(tenantId: string) {
 
             (student.tuitions as any[]).forEach(t => {
                 const dueDate = new Date(t.dueDate);
-                if (t.status === 'PENDING') {
+                if (t.status === 'PENDING' || t.status === 'OVERDUE') {
                     let amount = Number(t.amount);
 
                     // Check if overdue

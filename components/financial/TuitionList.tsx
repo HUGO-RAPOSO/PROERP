@@ -3,7 +3,8 @@
 import { formatCurrency } from "@/lib/utils";
 import { payTuition } from "@/lib/actions/tuition";
 import { useState } from "react";
-import { Loader2, CreditCard, AlertCircle, CheckCircle, Landmark } from "lucide-react";
+import { Loader2, CreditCard, AlertCircle, CheckCircle, Landmark, FileText, Download } from "lucide-react";
+import { getPublicUrl } from "@/lib/storage";
 import Link from "next/link";
 import PaymentModal from "../modals/PaymentModal";
 
@@ -81,6 +82,7 @@ export default function TuitionList({ tuitions, categories, accounts, tenantId, 
                             <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor Base</th>
                             {isHistory && <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Multa</th>}
                             <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Total</th>
+                            <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Doc</th>
                             <th className="px-8 py-5 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Status / Ações</th>
                         </tr>
                     </thead>
@@ -143,6 +145,19 @@ export default function TuitionList({ tuitions, categories, accounts, tenantId, 
                                     )}
                                     <td className="px-8 py-5 text-sm font-black text-gray-900 bg-gray-50/30">
                                         {formatCurrency(total)}
+                                    </td>
+                                    <td className="px-8 py-5 text-sm font-black text-gray-900">
+                                        {item.depositSlipUrl ? (
+                                            <a
+                                                href={getPublicUrl(item.depositSlipUrl)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="p-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-100 transition-colors inline-block"
+                                                title={`Talão: ${item.depositSlipNumber || 'Não informado'}`}
+                                            >
+                                                <FileText className="w-4 h-4" />
+                                            </a>
+                                        ) : '-'}
                                     </td>
                                     <td className="px-8 py-5 text-right">
                                         {isHistory ? (
