@@ -59,11 +59,16 @@ export default function SubjectManager({ courseId, subjects }: SubjectManagerPro
     async function onSubmit(values: SubjectFormValues) {
         setLoading(true);
         try {
-            await createSubject({
+            const res = await createSubject({
                 ...values,
                 semester: values.semester || undefined,
                 courseId,
             });
+
+            if (!res.success) {
+                alert(res.error || "Erro ao criar disciplina");
+                return;
+            }
             form.reset({
                 name: "",
                 code: "",
@@ -85,7 +90,10 @@ export default function SubjectManager({ courseId, subjects }: SubjectManagerPro
         if (!confirm("Tem certeza que deseja remover esta disciplina?")) return;
         setDeletingId(id);
         try {
-            await deleteSubject(id);
+            const res = await deleteSubject(id);
+            if (!res.success) {
+                alert(res.error || "Erro ao remover disciplina");
+            }
         } catch (error) {
             console.error(error);
         } finally {

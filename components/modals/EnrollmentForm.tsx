@@ -49,11 +49,16 @@ export default function EnrollmentForm({ studentId, studentName, courseId, tenan
     async function onSubmit(values: EnrollmentFormValues) {
         setLoading(true);
         try {
-            await enrollStudentInSubjects({
+            const res = await enrollStudentInSubjects({
                 ...values,
                 studentId,
                 tenantId,
             });
+
+            if (!res.success) {
+                throw new Error(res.error || "Erro ao realizar matrícula");
+            }
+
             toast.success(`${studentName} matriculado com sucesso!`);
             onSuccess();
         } catch (error: any) {

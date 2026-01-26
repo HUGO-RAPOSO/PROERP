@@ -18,28 +18,36 @@ export async function createCourse(data: {
     lateFeeValue?: number;
     lateFeeType?: "FIXED" | "PERCENTAGE";
 }) {
-    const { error } = await supabase
-        .from('Course')
-        .insert({
-            name: data.name,
-            type: data.type,
-            duration: data.duration,
-            periodType: data.periodType,
-            price: data.price,
-            tenantId: data.tenantId,
-            paymentStartDay: data.paymentStartDay,
-            paymentEndDay: data.paymentEndDay,
-            lateFeeValue: data.lateFeeValue,
-            lateFeeType: data.lateFeeType,
-            enrollmentFee: data.enrollmentFee
-        });
+    try {
+        const { data: course, error } = await supabase
+            .from('Course')
+            .insert({
+                name: data.name,
+                type: data.type,
+                duration: data.duration,
+                periodType: data.periodType,
+                price: data.price,
+                tenantId: data.tenantId,
+                paymentStartDay: data.paymentStartDay,
+                paymentEndDay: data.paymentEndDay,
+                lateFeeValue: data.lateFeeValue,
+                lateFeeType: data.lateFeeType,
+                enrollmentFee: data.enrollmentFee
+            })
+            .select()
+            .single();
 
-    if (error) {
-        console.error("Error creating course:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error creating course:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/academic");
+        return { success: true, data: course };
+    } catch (error: any) {
+        console.error("Critical error in createCourse:", error);
+        return { success: false, error: error.message || "Erro ao criar curso" };
     }
-
-    revalidatePath("/dashboard/academic");
 }
 
 export async function updateCourse(id: string, data: {
@@ -54,28 +62,36 @@ export async function updateCourse(id: string, data: {
     lateFeeValue?: number;
     lateFeeType?: "FIXED" | "PERCENTAGE";
 }) {
-    const { error } = await supabase
-        .from('Course')
-        .update({
-            name: data.name,
-            duration: data.duration,
-            price: data.price,
-            type: data.type,
-            periodType: data.periodType,
-            paymentStartDay: data.paymentStartDay,
-            paymentEndDay: data.paymentEndDay,
-            lateFeeValue: data.lateFeeValue,
-            lateFeeType: data.lateFeeType,
-            enrollmentFee: data.enrollmentFee
-        })
-        .eq('id', id);
+    try {
+        const { data: course, error } = await supabase
+            .from('Course')
+            .update({
+                name: data.name,
+                duration: data.duration,
+                price: data.price,
+                type: data.type,
+                periodType: data.periodType,
+                paymentStartDay: data.paymentStartDay,
+                paymentEndDay: data.paymentEndDay,
+                lateFeeValue: data.lateFeeValue,
+                lateFeeType: data.lateFeeType,
+                enrollmentFee: data.enrollmentFee
+            })
+            .eq('id', id)
+            .select()
+            .single();
 
-    if (error) {
-        console.error("Error updating course:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error updating course:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/academic");
+        return { success: true, data: course };
+    } catch (error: any) {
+        console.error("Critical error in updateCourse:", error);
+        return { success: false, error: error.message || "Erro ao atualizar curso" };
     }
-
-    revalidatePath("/dashboard/academic");
 }
 
 export async function getCourseImpact(id: string) {
@@ -127,17 +143,23 @@ export async function getCourseImpact(id: string) {
 }
 
 export async function deleteCourse(id: string) {
-    const { error } = await supabase
-        .from('Course')
-        .delete()
-        .eq('id', id);
+    try {
+        const { error } = await supabase
+            .from('Course')
+            .delete()
+            .eq('id', id);
 
-    if (error) {
-        console.error("Error deleting course:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error deleting course:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/academic");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Critical error in deleteCourse:", error);
+        return { success: false, error: error.message || "Erro ao excluir curso" };
     }
-
-    revalidatePath("/dashboard/academic");
 }
 
 // --- Subjects (Disciplinas) ---
@@ -153,26 +175,34 @@ export async function createSubject(data: {
     waiverGrade?: number;
     exclusionGrade?: number;
 }) {
-    const { error } = await supabase
-        .from('Subject')
-        .insert({
-            name: data.name,
-            code: data.code,
-            year: data.year,
-            semester: data.semester,
-            credits: data.credits,
-            courseId: data.courseId,
-            examWaiverPossible: data.examWaiverPossible,
-            waiverGrade: data.waiverGrade,
-            exclusionGrade: data.exclusionGrade,
-        });
+    try {
+        const { data: subject, error } = await supabase
+            .from('Subject')
+            .insert({
+                name: data.name,
+                code: data.code,
+                year: data.year,
+                semester: data.semester,
+                credits: data.credits,
+                courseId: data.courseId,
+                examWaiverPossible: data.examWaiverPossible,
+                waiverGrade: data.waiverGrade,
+                exclusionGrade: data.exclusionGrade,
+            })
+            .select()
+            .single();
 
-    if (error) {
-        console.error("Error creating subject:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error creating subject:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/academic");
+        return { success: true, data: subject };
+    } catch (error: any) {
+        console.error("Critical error in createSubject:", error);
+        return { success: false, error: error.message || "Erro ao criar disciplina" };
     }
-
-    revalidatePath("/dashboard/academic");
 }
 
 export async function updateSubject(id: string, data: {
@@ -185,38 +215,52 @@ export async function updateSubject(id: string, data: {
     waiverGrade?: number;
     exclusionGrade?: number;
 }) {
-    const { error } = await supabase
-        .from('Subject')
-        .update({
-            name: data.name,
-            code: data.code,
-            credits: data.credits,
-            year: data.year,
-            semester: data.semester,
-            examWaiverPossible: data.examWaiverPossible,
-            waiverGrade: data.waiverGrade,
-            exclusionGrade: data.exclusionGrade,
-        })
-        .eq('id', id);
+    try {
+        const { data: subject, error } = await supabase
+            .from('Subject')
+            .update({
+                name: data.name,
+                code: data.code,
+                credits: data.credits,
+                year: data.year,
+                semester: data.semester,
+                examWaiverPossible: data.examWaiverPossible,
+                waiverGrade: data.waiverGrade,
+                exclusionGrade: data.exclusionGrade,
+            })
+            .eq('id', id)
+            .select()
+            .single();
 
-    if (error) {
-        console.error("Error updating subject:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error updating subject:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/academic");
+        return { success: true, data: subject };
+    } catch (error: any) {
+        console.error("Critical error in updateSubject:", error);
+        return { success: false, error: error.message || "Erro ao atualizar disciplina" };
     }
-
-    revalidatePath("/dashboard/academic");
 }
 
 export async function deleteSubject(id: string) {
-    const { error } = await supabase
-        .from('Subject')
-        .delete()
-        .eq('id', id);
+    try {
+        const { error } = await supabase
+            .from('Subject')
+            .delete()
+            .eq('id', id);
 
-    if (error) {
-        console.error("Error deleting subject:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error deleting subject:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/academic");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Critical error in deleteSubject:", error);
+        return { success: false, error: error.message || "Erro ao excluir disciplina" };
     }
-
-    revalidatePath("/dashboard/academic");
 }

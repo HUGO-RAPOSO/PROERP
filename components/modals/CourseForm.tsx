@@ -51,12 +51,14 @@ export default function CourseForm({ tenantId, onSuccess, initialData }: CourseF
         setLoading(true);
         try {
             if (initialData) {
-                await updateCourse(initialData.id, values);
+                const res = await updateCourse(initialData.id, values);
+                if (!res.success) throw new Error(res.error || "Erro ao atualizar curso");
             } else {
-                await createCourse({
+                const res = await createCourse({
                     ...values,
                     tenantId,
                 });
+                if (!res.success) throw new Error(res.error || "Erro ao criar curso");
             }
             onSuccess();
             form.reset();

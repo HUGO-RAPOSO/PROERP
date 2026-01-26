@@ -15,48 +15,52 @@ export async function createStudent(data: {
     enrollmentSlipUrl?: string;
     enrollmentSlipNumber?: string;
 }) {
-    const { data: student, error } = await supabase
-        .from('Student')
-        .insert({
-            ...data,
-            status: "ACTIVE",
-        })
-        .select()
-        .single();
+    try {
+        const { data: student, error } = await supabase
+            .from('Student')
+            .insert({
+                ...data,
+                status: "ACTIVE",
+            })
+            .select()
+            .single();
 
-    if (error) {
-        console.error("Error creating student:", error);
-        throw new Error(error.message);
-    }
-
-    // Also create/sync User account if email exists
-    if (student.email) {
-        try {
-            const hashedPassword = await bcrypt.hash("Mudar@123", 10);
-            const { error: userError } = await supabase
-                .from('User')
-                .upsert({
-                    email: student.email,
-                    name: student.name,
-                    password: hashedPassword,
-                    tenantId: student.tenantId,
-                    role: 'STUDENT',
-                    studentId: student.id
-                }, { onConflict: 'email' });
-
-            if (userError) {
-                console.error("Error creating student user account:", userError);
-                // We don't throw here to avoid failing student creation if only user sync fails, 
-                // but in a real app you might want to handle this more strictly.
-            }
-        } catch (hashError) {
-            console.error("Error hashing password for student user:", hashError);
+        if (error) {
+            console.error("Error creating student:", error);
+            return { success: false, error: error.message };
         }
-    }
 
-    revalidatePath("/dashboard/academic");
-    revalidatePath("/dashboard");
-    return student;
+        // Also create/sync User account if email exists
+        if (student.email) {
+            try {
+                const hashedPassword = await bcrypt.hash("Mudar@123", 10);
+                const client = supabaseAdmin || supabase;
+                const { error: userError } = await client
+                    .from('User')
+                    .upsert({
+                        email: student.email,
+                        name: student.name,
+                        password: hashedPassword,
+                        tenantId: student.tenantId,
+                        role: 'STUDENT',
+                        studentId: student.id
+                    }, { onConflict: 'email' });
+
+                if (userError) {
+                    console.error("Error creating student user account:", userError);
+                }
+            } catch (hashError) {
+                console.error("Error processing student user sync:", hashError);
+            }
+        }
+
+        revalidatePath("/dashboard/academic");
+        revalidatePath("/dashboard");
+        return { success: true, data: student };
+    } catch (globalError: any) {
+        console.error("Critical error in createStudent:", globalError);
+        return { success: false, error: globalError.message || "Erro interno do servidor" };
+    }
 }
 
 export async function updateStudent(id: string, data: Partial<{
@@ -69,35 +73,46 @@ export async function updateStudent(id: string, data: Partial<{
     enrollmentSlipUrl: string;
     enrollmentSlipNumber: string;
 }>) {
-    const { data: student, error } = await supabase
-        .from('Student')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single();
+    try {
+        const { data: student, error } = await supabase
+            .from('Student')
+            .update(data)
+            .eq('id', id)
+            .select()
+            .single();
 
-    if (error) {
-        console.error("Error updating student:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error updating student:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/academic");
+        return { success: true, data: student };
+    } catch (error: any) {
+        console.error("Critical error in updateStudent:", error);
+        return { success: false, error: error.message || "Erro ao atualizar aluno" };
     }
-
-    revalidatePath("/dashboard/academic");
-    return student;
 }
 
 export async function deleteStudent(id: string) {
-    const { error } = await supabase
-        .from('Student')
-        .delete()
-        .eq('id', id);
+    try {
+        const { error } = await supabase
+            .from('Student')
+            .delete()
+            .eq('id', id);
 
-    if (error) {
-        console.error("Error deleting student:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error deleting student:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/academic");
+        revalidatePath("/dashboard");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Critical error in deleteStudent:", error);
+        return { success: false, error: error.message || "Erro ao excluir aluno" };
     }
-
-    revalidatePath("/dashboard/academic");
-    revalidatePath("/dashboard");
 }
 
 // Helper for conflict detection
@@ -269,17 +284,23 @@ export async function updateClass(id: string, data: Partial<{
 }
 
 export async function deleteClass(id: string) {
-    const { error } = await supabase
-        .from('Class')
-        .delete()
-        .eq('id', id);
+    try {
+        const { error } = await supabase
+            .from('Class')
+            .delete()
+            .eq('id', id);
 
-    if (error) {
-        console.error("Error deleting class:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error deleting class:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/academic");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Critical error in deleteClass:", error);
+        return { success: false, error: error.message || "Erro ao excluir turma" };
     }
-
-    revalidatePath("/dashboard/academic");
 }
 
 export async function getCourseDashboardData(courseId: string) {
@@ -481,26 +502,31 @@ export async function enrollStudentInSubjects(data: {
     year: number;
     tenantId: string;
 }) {
-    const enrollments = data.subjectIds.map(subjectId => ({
-        studentId: data.studentId,
-        subjectId: subjectId,
-        year: data.year,
-        tenantId: data.tenantId,
-        status: 'ACTIVE'
-    }));
+    try {
+        const enrollments = data.subjectIds.map(subjectId => ({
+            studentId: data.studentId,
+            subjectId: subjectId,
+            year: data.year,
+            tenantId: data.tenantId,
+            status: 'ACTIVE'
+        }));
 
-    const { data: inserted, error } = await supabase
-        .from('Enrollment')
-        .insert(enrollments)
-        .select();
+        const { data: inserted, error } = await supabase
+            .from('Enrollment')
+            .insert(enrollments)
+            .select();
 
-    if (error) {
-        console.error("Error batch enrolling student:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error batch enrolling student:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/academic");
+        return { success: true, data: inserted };
+    } catch (error: any) {
+        console.error("Critical error in enrollStudentInSubjects:", error);
+        return { success: false, error: error.message || "Erro ao realizar matrícula" };
     }
-
-    revalidatePath("/dashboard/academic");
-    return inserted;
 }
 
 export async function createStudentDocuments(documents: {
@@ -509,16 +535,22 @@ export async function createStudentDocuments(documents: {
     url: string;
     tenantId: string;
 }[]) {
-    const { error } = await supabase
-        .from('StudentDocument')
-        .insert(documents);
+    try {
+        const client = supabaseAdmin || supabase;
+        const { error } = await client
+            .from('StudentDocument')
+            .insert(documents);
 
-    if (error) {
-        console.error("Error creating student documents:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error creating student documents:", error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("Critical error in createStudentDocuments:", error);
+        return { success: false, error: error.message || "Erro ao salvar documentos" };
     }
-
-    return { success: true };
 }
 export async function getStudentFullProfile(studentId: string) {
     try {

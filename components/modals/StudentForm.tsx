@@ -60,17 +60,19 @@ export default function StudentForm({ tenantId, onSuccess, initialData, courses 
             // 2. Create/Update Student
             let studentId = initialData?.id;
             if (initialData) {
-                await updateStudent(initialData.id, {
+                const res = await updateStudent(initialData.id, {
                     ...values,
                     enrollmentSlipUrl: enrollmentSlipUrl || undefined
-                } as any);
+                });
+                if (!res.success) throw new Error(res.error || "Erro ao atualizar aluno");
             } else {
-                const student = await createStudent({
+                const res = await createStudent({
                     ...values,
                     tenantId,
                     enrollmentSlipUrl
                 });
-                studentId = student.id;
+                if (!res.success) throw new Error(res.error || "Erro ao criar aluno");
+                studentId = res.data.id;
             }
 
             // 3. Upload and save Extra Documents
@@ -93,16 +95,20 @@ export default function StudentForm({ tenantId, onSuccess, initialData, courses 
             }
 
             if (docsToSave.length > 0) {
-                await createStudentDocuments(docsToSave);
+                const res = await createStudentDocuments(docsToSave);
+                if (!res.success) {
+                    console.error("Erro ao salvar documentos extras:", res.error);
+                    alert("Aluno cadastrado, mas houve um erro ao salvar alguns documentos: " + res.error);
+                }
             }
 
             onSuccess();
             form.reset();
             setExtraDocs([{ type: "BI/Passaporte", file: null }]);
             setEnrollmentSlip(null);
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert("Erro ao salvar aluno");
+            alert(error.message || "Erro ao salvar aluno");
         } finally {
             setLoading(false);
         }
