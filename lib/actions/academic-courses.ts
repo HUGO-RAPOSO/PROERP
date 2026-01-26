@@ -11,6 +11,7 @@ export async function createCourse(data: {
     duration: number;
     periodType: string;
     price: number;
+    enrollmentFee: number;
     tenantId: string;
     paymentStartDay?: number;
     paymentEndDay?: number;
@@ -29,7 +30,8 @@ export async function createCourse(data: {
             paymentStartDay: data.paymentStartDay,
             paymentEndDay: data.paymentEndDay,
             lateFeeValue: data.lateFeeValue,
-            lateFeeType: data.lateFeeType
+            lateFeeType: data.lateFeeType,
+            enrollmentFee: data.enrollmentFee
         });
 
     if (error) {
@@ -44,6 +46,7 @@ export async function updateCourse(id: string, data: {
     name: string;
     duration: number;
     price: number;
+    enrollmentFee: number;
     type: string;
     periodType: string;
     paymentStartDay?: number;
@@ -62,7 +65,8 @@ export async function updateCourse(id: string, data: {
             paymentStartDay: data.paymentStartDay,
             paymentEndDay: data.paymentEndDay,
             lateFeeValue: data.lateFeeValue,
-            lateFeeType: data.lateFeeType
+            lateFeeType: data.lateFeeType,
+            enrollmentFee: data.enrollmentFee
         })
         .eq('id', id);
 

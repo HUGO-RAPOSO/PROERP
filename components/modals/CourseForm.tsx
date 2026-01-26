@@ -13,6 +13,7 @@ const courseSchema = z.object({
     duration: z.coerce.number().min(1, "Duração mínima de 1 período"),
     periodType: z.enum(["YEARS", "SEMESTERS"]),
     price: z.coerce.number().min(0, "O preço deve ser maior ou igual a zero"),
+    enrollmentFee: z.coerce.number().min(0, "O valor da matrícula deve ser maior ou igual a zero"),
     paymentStartDay: z.coerce.number().min(1).max(31).default(1),
     paymentEndDay: z.coerce.number().min(1).max(31).default(10),
     lateFeeValue: z.coerce.number().min(0).default(0),
@@ -38,6 +39,7 @@ export default function CourseForm({ tenantId, onSuccess, initialData }: CourseF
             duration: 4,
             periodType: "YEARS",
             price: 0,
+            enrollmentFee: 0,
             paymentStartDay: 1,
             paymentEndDay: 10,
             lateFeeValue: 0,
@@ -115,7 +117,7 @@ export default function CourseForm({ tenantId, onSuccess, initialData }: CourseF
             </div>
 
             <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Valor da Mensalidade (R$)</label>
+                <label className="text-sm font-bold text-gray-700">Valor da Mensalidade (MZN)</label>
                 <input
                     type="number"
                     step="0.01"
@@ -125,6 +127,20 @@ export default function CourseForm({ tenantId, onSuccess, initialData }: CourseF
                 />
                 {form.formState.errors.price && (
                     <p className="text-xs text-red-500 font-medium">{form.formState.errors.price.message}</p>
+                )}
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700">Valor da Matrícula (MZN)</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    {...form.register("enrollmentFee")}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
+                    placeholder="0,00"
+                />
+                {form.formState.errors.enrollmentFee && (
+                    <p className="text-xs text-red-500 font-medium">{form.formState.errors.enrollmentFee.message}</p>
                 )}
             </div>
 

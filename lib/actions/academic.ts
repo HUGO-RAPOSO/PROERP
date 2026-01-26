@@ -10,6 +10,9 @@ export async function createStudent(data: {
     phone?: string;
     courseId: string;
     tenantId: string;
+    documentUrl?: string;
+    enrollmentSlipUrl?: string;
+    enrollmentSlipNumber?: string;
 }) {
     const { data: student, error } = await supabase
         .from('Student')
@@ -53,6 +56,9 @@ export async function updateStudent(id: string, data: Partial<{
     phone: string;
     status: string;
     courseId: string;
+    documentUrl: string;
+    enrollmentSlipUrl: string;
+    enrollmentSlipNumber: string;
 }>) {
     const { data: student, error } = await supabase
         .from('Student')
