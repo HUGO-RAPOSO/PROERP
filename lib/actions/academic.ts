@@ -31,19 +31,27 @@ export async function createStudent(data: {
 
     // Also create/sync User account if email exists
     if (student.email) {
-        const hashedPassword = await bcrypt.hash("Mudar@123", 10);
-        const { error: userError } = await supabase
-            .from('User')
-            .upsert({
-                email: student.email,
-                name: student.name,
-                password: hashedPassword,
-                tenantId: student.tenantId,
-                role: 'STUDENT',
-                studentId: student.id
-            }, { onConflict: 'email' });
+        try {
+            const hashedPassword = await bcrypt.hash("Mudar@123", 10);
+            const { error: userError } = await supabase
+                .from('User')
+                .upsert({
+                    email: student.email,
+                    name: student.name,
+                    password: hashedPassword,
+                    tenantId: student.tenantId,
+                    role: 'STUDENT',
+                    studentId: student.id
+                }, { onConflict: 'email' });
 
-        if (userError) console.error("Error creating student user:", userError);
+            if (userError) {
+                console.error("Error creating student user account:", userError);
+                // We don't throw here to avoid failing student creation if only user sync fails, 
+                // but in a real app you might want to handle this more strictly.
+            }
+        } catch (hashError) {
+            console.error("Error hashing password for student user:", hashError);
+        }
     }
 
     revalidatePath("/dashboard/academic");
@@ -501,7 +509,7 @@ export async function createStudentDocuments(documents: {
     url: string;
     tenantId: string;
 }[]) {
-    const { error } = await supabaseAdmin
+    const { error } = await supabase
         .from('StudentDocument')
         .insert(documents);
 
