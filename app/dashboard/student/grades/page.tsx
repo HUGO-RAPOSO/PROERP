@@ -98,8 +98,8 @@ export default function StudentGradesPage() {
                                             <AccordionTrigger className="hover:no-underline">
                                                 <div className="flex justify-between w-full pr-4 items-center">
                                                     <div className="text-left">
-                                                        <div className="font-semibold">{enr.class?.subject?.name}</div>
-                                                        <div className="text-xs text-gray-400">{enr.class?.subject?.code}</div>
+                                                        <div className="font-semibold">{enr.subject?.name}</div>
+                                                        <div className="text-xs text-gray-400">{enr.subject?.code}</div>
                                                     </div>
                                                     <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusColor}`}>
                                                         {statusText}
