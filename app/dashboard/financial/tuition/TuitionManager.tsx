@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Loader2, Calendar, CreditCard, User, Tag, Landmark, AlertCircle, CheckCircle } from "lucide-react";
+import { Plus, Loader2, Calendar, CreditCard, User, Tag, Landmark, AlertCircle, CheckCircle, FileUp, X } from "lucide-react";
 import Link from "next/link";
 import BaseModal from "@/components/modals/BaseModal";
 import { generateMonthlyTuition, createIndividualTuition } from "@/lib/actions/tuition";
+import { uploadFile } from "@/lib/storage";
 
 interface Student {
     id: string;
@@ -57,6 +58,8 @@ export default function TuitionManager({ tenantId, students, categories, account
     const [status, setStatus] = useState<'PENDING' | 'PAID'>('PENDING');
     const [categoryId, setCategoryId] = useState("");
     const [accountId, setAccountId] = useState("");
+    const [slipNumber, setSlipNumber] = useState("");
+    const [file, setFile] = useState<File | null>(null);
 
     async function handleGenerateBatch() {
         if (!dueDate) return;
@@ -97,30 +100,50 @@ export default function TuitionManager({ tenantId, students, categories, account
         if (!student?.course?.id) return;
 
         setLoading(true);
-        const result = await createIndividualTuition({
-            studentId: selectedStudentId,
-            courseId: student.course.id,
-            amount,
-            dueDate: individualDueDate,
-            status,
-            tenantId,
-            categoryId: status === 'PAID' ? categoryId : undefined,
-            accountId: status === 'PAID' ? accountId : undefined
-        });
-        setLoading(false);
+        try {
+            let slipUrl = "";
+            if (status === 'PAID' && file) {
+                const path = `tuitions/${tenantId}/manual_${Date.now()}_${file.name}`;
+                const uploadResult = await uploadFile(file, path);
+                if (uploadResult.success) {
+                    slipUrl = uploadResult.path || "";
+                } else {
+                    throw new Error(uploadResult.error);
+                }
+            }
 
-        if (result.success) {
-            alert("Mensalidade registrada com sucesso!");
-            setIsIndividualOpen(false);
-            // Reset state
-            setSelectedStudentId("");
-            setAmount(0);
-            setIndividualDueDate("");
-            setCategoryId("");
-            setAccountId("");
-            setStatus('PENDING');
-        } else {
-            alert(result.error);
+            const result = await createIndividualTuition({
+                studentId: selectedStudentId,
+                courseId: student.course.id!,
+                amount,
+                dueDate: individualDueDate,
+                status,
+                tenantId,
+                categoryId: status === 'PAID' ? categoryId : undefined,
+                accountId: status === 'PAID' ? accountId : undefined,
+                depositSlipUrl: slipUrl,
+                depositSlipNumber: slipNumber
+            });
+
+            if (result.success) {
+                alert("Mensalidade registrada com sucesso!");
+                setIsIndividualOpen(false);
+                // Reset state
+                setSelectedStudentId("");
+                setAmount(0);
+                setIndividualDueDate("");
+                setCategoryId("");
+                setAccountId("");
+                setSlipNumber("");
+                setFile(null);
+                setStatus('PENDING');
+            } else {
+                alert(result.error);
+            }
+        } catch (error: any) {
+            alert(error.message);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -317,6 +340,57 @@ export default function TuitionManager({ tenantId, students, categories, account
                                     <Link href="/dashboard/financial/accounts" className="text-xs font-black text-amber-700 underline">CRIAR AGORA</Link>
                                 </div>
                             )
+                        )}
+
+                        {status === 'PAID' && (
+                            <>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-700">Número do Talão / Depósito</label>
+                                    <div className="relative">
+                                        <CreditCard className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Ex: 12345678"
+                                            value={slipNumber}
+                                            onChange={(e) => setSlipNumber(e.target.value)}
+                                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none text-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-700">Anexo (Scanner / Foto)</label>
+                                    {!file ? (
+                                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 hover:bg-gray-100/50 hover:border-primary-300 transition-all cursor-pointer group">
+                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                <div className="p-3 bg-white rounded-xl shadow-sm border border-gray-100 mb-2 group-hover:scale-110 transition-transform">
+                                                    <FileUp className="w-6 h-6 text-gray-400 group-hover:text-primary-600" />
+                                                </div>
+                                                <p className="text-xs font-bold text-gray-500">Clique para selecionar</p>
+                                            </div>
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                accept="image/*,.pdf"
+                                                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                                            />
+                                        </label>
+                                    ) : (
+                                        <div className="flex items-center gap-3 p-4 bg-primary-50 border border-primary-100 rounded-2xl">
+                                            <FileUp className="w-5 h-5 text-primary-600" />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-xs font-bold text-primary-900 truncate">{file.name}</p>
+                                            </div>
+                                            <button
+                                                onClick={() => setFile(null)}
+                                                className="p-2 hover:bg-white rounded-xl transition-colors text-primary-400 hover:text-red-500"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </>
                         )}
                     </div>
 

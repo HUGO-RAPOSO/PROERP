@@ -72,7 +72,14 @@ export async function generateMonthlyTuition(tenantId: string, month: number, ye
     }
 }
 
-export async function payTuition(tuitionId: string, categoryId: string, accountId: string, tenantId: string) {
+export async function payTuition(
+    tuitionId: string,
+    categoryId: string,
+    accountId: string,
+    tenantId: string,
+    depositSlipUrl?: string,
+    depositSlipNumber?: string
+) {
     try {
         // 1. Fetch Tuition details with Course settings
         const { data: tuition, error: fetchError } = await supabase
@@ -115,7 +122,10 @@ export async function payTuition(tuitionId: string, categoryId: string, accountI
             .update({
                 status: 'PAID',
                 paidDate: new Date(),
-                lateFee: lateFee
+                lateFee: lateFee,
+                accountId: accountId,
+                depositSlipUrl: depositSlipUrl,
+                depositSlipNumber: depositSlipNumber
             })
             .eq('id', tuitionId);
 
@@ -151,6 +161,8 @@ export async function createIndividualTuition(data: {
     tenantId: string;
     categoryId?: string; // Required if status is PAID
     accountId?: string;  // Required if status is PAID
+    depositSlipUrl?: string;
+    depositSlipNumber?: string;
 }) {
     try {
         const { data: tuition, error } = await supabase
@@ -163,6 +175,9 @@ export async function createIndividualTuition(data: {
                 status: data.status,
                 tenantId: data.tenantId,
                 paidDate: data.status === 'PAID' ? new Date() : null,
+                accountId: data.accountId,
+                depositSlipUrl: data.depositSlipUrl,
+                depositSlipNumber: data.depositSlipNumber
             })
             .select('*, student:Student(name)')
             .single();

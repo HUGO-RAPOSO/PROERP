@@ -5,6 +5,7 @@ import { payTuition } from "@/lib/actions/tuition";
 import { useState } from "react";
 import { Loader2, CreditCard, AlertCircle, CheckCircle, Landmark } from "lucide-react";
 import Link from "next/link";
+import PaymentModal from "../modals/PaymentModal";
 
 interface TuitionListProps {
     tuitions: any[];
@@ -17,38 +18,12 @@ interface TuitionListProps {
 export default function TuitionList({ tuitions, categories, accounts, tenantId, isHistory = false }: TuitionListProps) {
     const [processingId, setProcessingId] = useState<string | null>(null);
     const [selectedAccountId, setSelectedAccountId] = useState<string>("");
+    const [selectedTuition, setSelectedTuition] = useState<any>(null);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
-    async function handlePay(id: string) {
-        if (!confirm("Confirmar recebimento desta mensalidade? Isso criará uma receita no financeiro.")) return;
-
-        let categoryId = categories.find(c =>
-            c.name.toLowerCase().includes("mensalidade") ||
-            c.name.toLowerCase().includes("ensino")
-        )?.id;
-
-        if (!categoryId && categories.length > 0) {
-            categoryId = categories[0].id;
-        }
-
-        if (!categoryId) {
-            alert("Nenhuma categoria financeira de entrada vinculada.");
-            return;
-        }
-
-        const accountId = selectedAccountId || accounts[0]?.id;
-
-        if (!accountId) {
-            alert("Nenhuma conta financeira capturada. Cadastre uma conta (Banco/M-Pesa/Dinheiro) primeiro.");
-            return;
-        }
-
-        setProcessingId(id);
-        const result = await payTuition(id, categoryId, accountId, tenantId);
-        setProcessingId(null);
-
-        if (!result.success) {
-            alert(result.error);
-        }
+    async function handlePay(item: any) {
+        setSelectedTuition(item);
+        setIsPaymentModalOpen(true);
     }
 
     if (tuitions.length === 0) {
@@ -189,7 +164,7 @@ export default function TuitionList({ tuitions, categories, accounts, tenantId, 
                                                     </div>
                                                 )}
                                                 <button
-                                                    onClick={() => handlePay(item.id)}
+                                                    onClick={() => handlePay(item)}
                                                     disabled={!!processingId}
                                                     className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-primary-700 transition-all disabled:opacity-50 shadow-lg shadow-primary-500/10 active:scale-95"
                                                 >
@@ -209,6 +184,15 @@ export default function TuitionList({ tuitions, categories, accounts, tenantId, 
                     </tbody>
                 </table>
             </div>
+
+            <PaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                tuition={selectedTuition}
+                categories={categories}
+                accounts={accounts}
+                tenantId={tenantId}
+            />
         </div>
     );
 }
