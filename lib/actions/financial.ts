@@ -15,23 +15,29 @@ export async function createTransaction(data: {
     tenantId: string;
     date?: Date;
 }) {
-    const { data: transaction, error } = await supabaseAdmin
-        .from('Transaction')
-        .insert({
-            ...data,
-            date: data.date || new Date(),
-        })
-        .select()
-        .single();
+    try {
+        const client = supabaseAdmin || supabase;
+        const { data: transaction, error } = await client
+            .from('Transaction')
+            .insert({
+                ...data,
+                date: data.date || new Date(),
+            })
+            .select()
+            .single();
 
-    if (error) {
-        console.error("Error creating transaction:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error creating transaction:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/financial");
+        revalidatePath("/dashboard");
+        return { success: true, data: transaction };
+    } catch (error: any) {
+        console.error("Critical error in createTransaction:", error);
+        return { success: false, error: error.message || "Erro ao criar transação" };
     }
-
-    revalidatePath("/dashboard/financial");
-    revalidatePath("/dashboard");
-    return transaction;
 }
 
 export async function createCategory(data: {
@@ -40,51 +46,71 @@ export async function createCategory(data: {
     color?: string; // Add color
     tenantId: string;
 }) {
-    const { data: category, error } = await supabaseAdmin
-        .from('Category')
-        .insert({
-            ...data,
-            color: data.color || '#3B82F6'
-        })
-        .select()
-        .single();
+    try {
+        const client = supabaseAdmin || supabase;
+        const { data: category, error } = await client
+            .from('Category')
+            .insert({
+                ...data,
+                color: data.color || '#3B82F6'
+            })
+            .select()
+            .single();
 
-    if (error) {
-        console.error("Error creating category:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error creating category:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/financial");
+        return { success: true, data: category };
+    } catch (error: any) {
+        console.error("Critical error in createCategory:", error);
+        return { success: false, error: error.message || "Erro ao criar categoria" };
     }
-
-    revalidatePath("/dashboard/financial");
-    return category;
 }
 
 export async function deleteCategory(id: string) {
-    const { error } = await supabaseAdmin
-        .from('Category')
-        .delete()
-        .eq('id', id);
+    try {
+        const client = supabaseAdmin || supabase;
+        const { error } = await client
+            .from('Category')
+            .delete()
+            .eq('id', id);
 
-    if (error) {
-        console.error("Error deleting category:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error deleting category:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/financial");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Critical error in deleteCategory:", error);
+        return { success: false, error: error.message || "Erro ao excluir categoria" };
     }
-
-    revalidatePath("/dashboard/financial");
 }
 
 export async function deleteTransaction(id: string) {
-    const { error } = await supabaseAdmin
-        .from('Transaction')
-        .delete()
-        .eq('id', id);
+    try {
+        const client = supabaseAdmin || supabase;
+        const { error } = await client
+            .from('Transaction')
+            .delete()
+            .eq('id', id);
 
-    if (error) {
-        console.error("Error deleting transaction:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error deleting transaction:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/financial");
+        revalidatePath("/dashboard");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Critical error in deleteTransaction:", error);
+        return { success: false, error: error.message || "Erro ao excluir transação" };
     }
-
-    revalidatePath("/dashboard/financial");
-    revalidatePath("/dashboard");
 }
 
 export async function updateTransaction(id: string, data: Partial<{
@@ -97,28 +123,35 @@ export async function updateTransaction(id: string, data: Partial<{
     employeeId?: string;
     date?: Date;
 }>) {
-    const { data: transaction, error } = await supabaseAdmin
-        .from('Transaction')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single();
+    try {
+        const client = supabaseAdmin || supabase;
+        const { data: transaction, error } = await client
+            .from('Transaction')
+            .update(data)
+            .eq('id', id)
+            .select()
+            .single();
 
-    if (error) {
-        console.error("Error updating transaction:", error);
-        throw new Error(error.message);
+        if (error) {
+            console.error("Error updating transaction:", error);
+            return { success: false, error: error.message };
+        }
+
+        revalidatePath("/dashboard/financial");
+        revalidatePath("/dashboard");
+        return { success: true, data: transaction };
+    } catch (error: any) {
+        console.error("Critical error in updateTransaction:", error);
+        return { success: false, error: error.message || "Erro ao atualizar transação" };
     }
-
-    revalidatePath("/dashboard/financial");
-    revalidatePath("/dashboard");
-    return transaction;
 }
 
 // Payroll Actions
 export async function generateMonthlyPayroll(tenantId: string) {
     try {
+        const client = supabaseAdmin || supabase;
         // 1. Get all active employees with salary > 0
-        const { data: employees, error: empError } = await supabaseAdmin
+        const { data: employees, error: empError } = await client
             .from('Employee')
             .select('*')
             .eq('tenantId', tenantId)
@@ -137,7 +170,7 @@ export async function generateMonthlyPayroll(tenantId: string) {
 
         for (const emp of employees) {
             // Check if already exists
-            const { data: existing } = await supabaseAdmin
+            const { data: existing } = await client
                 .from('Payroll')
                 .select('id')
                 .eq('employeeId', emp.id)
@@ -146,7 +179,7 @@ export async function generateMonthlyPayroll(tenantId: string) {
                 .maybeSingle();
 
             if (!existing) {
-                await supabaseAdmin.from('Payroll').insert({
+                await client.from('Payroll').insert({
                     employeeId: emp.id,
                     amount: emp.salary,
                     date: new Date(),
@@ -160,14 +193,16 @@ export async function generateMonthlyPayroll(tenantId: string) {
         return { success: true, message: `${createdCount} registros de folha gerados.` };
 
     } catch (error: any) {
-        return { success: false, error: error.message };
+        console.error("Critical error in generateMonthlyPayroll:", error);
+        return { success: false, error: error.message || "Erro ao gerar folha" };
     }
 }
 
 export async function processPayrollPayment(payrollId: string, categoryId: string, accountId: string, tenantId: string) {
     try {
+        const client = supabaseAdmin || supabase;
         // 1. Get Payroll details
-        const { data: payroll, error: fetchError } = await supabaseAdmin
+        const { data: payroll, error: fetchError } = await client
             .from('Payroll')
             .select('*, employee:Employee(name)')
             .eq('id', payrollId)
@@ -177,7 +212,7 @@ export async function processPayrollPayment(payrollId: string, categoryId: strin
         if (payroll.status === 'PAID') throw new Error("Este pagamento já foi processado.");
 
         // 2. Update Payroll status
-        const { error: updateError } = await supabaseAdmin
+        const { error: updateError } = await client
             .from('Payroll')
             .update({ status: 'PAID', date: new Date() })
             .eq('id', payrollId);
@@ -185,7 +220,7 @@ export async function processPayrollPayment(payrollId: string, categoryId: strin
         if (updateError) throw updateError;
 
         // 3. Create Expense Transaction
-        await createTransaction({
+        const transactionRes = await createTransaction({
             description: `Salário - ${(payroll.employee as any)?.name}`,
             amount: Number(payroll.amount),
             type: 'EXPENSE',
@@ -196,12 +231,17 @@ export async function processPayrollPayment(payrollId: string, categoryId: strin
             date: new Date()
         });
 
+        if (!transactionRes.success) {
+            throw new Error(transactionRes.error || "Erro ao criar transação de pagamento");
+        }
+
         revalidatePath("/dashboard/financial/payroll");
         revalidatePath("/dashboard/financial");
         revalidatePath("/dashboard/hr"); // Update HR views too
 
         return { success: true };
     } catch (error: any) {
-        return { success: false, error: error.message };
+        console.error("Critical error in processPayrollPayment:", error);
+        return { success: false, error: error.message || "Erro ao processar pagamento" };
     }
 }

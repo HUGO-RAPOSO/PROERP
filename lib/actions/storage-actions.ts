@@ -1,5 +1,6 @@
 "use server";
 
+import { supabase } from "@/lib/supabase";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export async function uploadFileAdmin(
@@ -14,8 +15,9 @@ export async function uploadFileAdmin(
         }
 
         const buffer = await file.arrayBuffer();
+        const client = supabaseAdmin || supabase;
 
-        const { data, error } = await supabaseAdmin.storage
+        const { data, error } = await client.storage
             .from(bucket)
             .upload(path, buffer, {
                 cacheControl: "3600",
