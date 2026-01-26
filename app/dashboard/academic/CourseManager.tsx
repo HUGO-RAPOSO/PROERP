@@ -24,6 +24,7 @@ interface Course {
     duration: number;
     periodType: "YEARS" | "SEMESTERS";
     price: number;
+    enrollmentFee: number;
     paymentStartDay: number;
     paymentEndDay: number;
     lateFeeValue: number;
