@@ -145,6 +145,9 @@ export async function createSubject(data: {
     semester?: number;
     credits?: number;
     courseId: string;
+    examWaiverPossible?: boolean;
+    waiverGrade?: number;
+    exclusionGrade?: number;
 }) {
     const { error } = await supabase
         .from('Subject')
@@ -155,6 +158,9 @@ export async function createSubject(data: {
             semester: data.semester,
             credits: data.credits,
             courseId: data.courseId,
+            examWaiverPossible: data.examWaiverPossible,
+            waiverGrade: data.waiverGrade,
+            exclusionGrade: data.exclusionGrade,
         });
 
     if (error) {
@@ -165,7 +171,16 @@ export async function createSubject(data: {
     revalidatePath("/dashboard/academic");
 }
 
-export async function updateSubject(id: string, data: { name: string; code?: string; credits?: number; year?: number; semester?: number }) {
+export async function updateSubject(id: string, data: {
+    name: string;
+    code?: string;
+    credits?: number;
+    year?: number;
+    semester?: number;
+    examWaiverPossible?: boolean;
+    waiverGrade?: number;
+    exclusionGrade?: number;
+}) {
     const { error } = await supabase
         .from('Subject')
         .update({
@@ -174,6 +189,9 @@ export async function updateSubject(id: string, data: { name: string; code?: str
             credits: data.credits,
             year: data.year,
             semester: data.semester,
+            examWaiverPossible: data.examWaiverPossible,
+            waiverGrade: data.waiverGrade,
+            exclusionGrade: data.exclusionGrade,
         })
         .eq('id', id);
 

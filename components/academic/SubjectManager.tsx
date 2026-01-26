@@ -14,6 +14,9 @@ const subjectSchema = z.object({
     year: z.coerce.number().min(1, "Ano deve ser 1 ou maior"),
     semester: z.coerce.number().optional().nullable(),
     credits: z.coerce.number().optional(),
+    examWaiverPossible: z.boolean().default(true),
+    waiverGrade: z.coerce.number().min(0).max(20).default(14),
+    exclusionGrade: z.coerce.number().min(0).max(20).default(7),
 });
 
 type SubjectFormValues = z.infer<typeof subjectSchema>;
@@ -25,6 +28,9 @@ interface Subject {
     year: number;
     semester?: number | null;
     credits: number | null;
+    examWaiverPossible: boolean;
+    waiverGrade: number;
+    exclusionGrade: number;
 }
 
 interface SubjectManagerProps {
@@ -44,6 +50,9 @@ export default function SubjectManager({ courseId, subjects }: SubjectManagerPro
             year: 1,
             semester: 1,
             credits: 4,
+            examWaiverPossible: true,
+            waiverGrade: 14,
+            exclusionGrade: 7,
         },
     });
 
@@ -61,6 +70,9 @@ export default function SubjectManager({ courseId, subjects }: SubjectManagerPro
                 year: values.year,       // Keep context
                 semester: values.semester, // Keep context
                 credits: 4,
+                examWaiverPossible: true,
+                waiverGrade: 14,
+                exclusionGrade: 7,
             });
         } catch (error) {
             console.error(error);
@@ -150,6 +162,40 @@ export default function SubjectManager({ courseId, subjects }: SubjectManagerPro
                             </div>
                         </div>
 
+                        <div className="bg-white p-4 rounded-xl border border-gray-100 space-y-3">
+                            <h4 className="text-xs font-bold text-gray-400 uppercase">Regras de Avaliação</h4>
+
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm text-gray-600">Permite Dispensa?</label>
+                                <input
+                                    type="checkbox"
+                                    {...form.register("examWaiverPossible")}
+                                    className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase">Nota Dispensa</label>
+                                    <input
+                                        type="number"
+                                        {...form.register("waiverGrade")}
+                                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
+                                        placeholder="Ex: 14"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase">Nota Exclusão</label>
+                                    <input
+                                        type="number"
+                                        {...form.register("exclusionGrade")}
+                                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
+                                        placeholder="Ex: 7"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
                         <button
                             type="submit"
                             disabled={loading}
@@ -188,6 +234,9 @@ export default function SubjectManager({ courseId, subjects }: SubjectManagerPro
                                                     </span>
                                                     {subject.code && <span>Cód: {subject.code}</span>}
                                                     {subject.credits && <span>{subject.credits} Créditos</span>}
+                                                    <span className="text-[10px] text-gray-400">
+                                                        (Dispensa: {subject.waiverGrade} | Exclusão: {subject.exclusionGrade})
+                                                    </span>
                                                 </div>
                                             </div>
                                             <button

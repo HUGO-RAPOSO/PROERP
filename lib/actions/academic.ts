@@ -358,7 +358,12 @@ export async function getClassStudentsWithGrades(classId: string) {
             id,
             studentId,
             student:Student (id, name),
-            grades:Grade (*)
+            grades:Grade (*),
+            subject:Subject (
+                examWaiverPossible,
+                waiverGrade,
+                exclusionGrade
+            )
         `)
         .eq('subjectId', cls.subjectId);
 
