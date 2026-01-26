@@ -129,7 +129,42 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
                             </div>
 
                             <div className="space-y-4">
-                                <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Próximos Passos</h4>
+                                <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Documentação de Matrícula</h4>
+                                <div className="grid grid-cols-1 gap-3">
+                                    {student.documentUrl && (
+                                        <a
+                                            href={getPublicUrl(student.documentUrl)}
+                                            target="_blank"
+                                            className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-primary-300 hover:shadow-sm transition-all"
+                                        >
+                                            <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600">
+                                                <FileText className="w-4 h-4" />
+                                            </div>
+                                            <span className="text-sm font-bold text-gray-700">Documento de Identificação</span>
+                                        </a>
+                                    )}
+                                    {student.enrollmentSlipUrl && (
+                                        <a
+                                            href={getPublicUrl(student.enrollmentSlipUrl)}
+                                            target="_blank"
+                                            className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-primary-300 hover:shadow-sm transition-all"
+                                        >
+                                            <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
+                                                <CreditCard className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <span className="text-sm font-bold text-gray-700 block">Comprovativo de Matrícula</span>
+                                                {student.enrollmentSlipNumber && (
+                                                    <span className="text-[10px] text-gray-400 font-bold uppercase">Talão: {student.enrollmentSlipNumber}</span>
+                                                )}
+                                            </div>
+                                        </a>
+                                    )}
+                                    {!student.documentUrl && !student.enrollmentSlipUrl && (
+                                        <p className="text-xs text-gray-400 italic py-2">Nenhum documento anexado na matrícula.</p>
+                                    )}
+                                </div>
+
                                 <div className="p-4 bg-primary-600 rounded-2xl text-white shadow-lg shadow-primary-500/20">
                                     <p className="text-xs font-bold text-primary-100 uppercase mb-2">Sugestão do Sistema</p>
                                     <p className="text-sm leading-relaxed">
