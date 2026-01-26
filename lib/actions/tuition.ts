@@ -1,13 +1,13 @@
 "use server";
 
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 import { createTransaction } from "./financial";
 
 export async function generateMonthlyTuition(tenantId: string, month: number, year: number, dueDate: string) {
     try {
         // 1. Fetch all Active Students with their Courses (directly via student.courseId)
-        const { data: students, error: studentError } = await supabase
+        const { data: students, error: studentError } = await supabaseAdmin
             .from('Student')
             .select(`
                 id,
@@ -31,7 +31,7 @@ export async function generateMonthlyTuition(tenantId: string, month: number, ye
             if (processed.has(key)) continue;
 
             // Check if tuition already exists for this student/course/month/year
-            const { data: existing } = await supabase
+            const { data: existing } = await supabaseAdmin
                 .from('Tuition')
                 .select('id')
                 .eq('studentId', student.id)
@@ -57,7 +57,7 @@ export async function generateMonthlyTuition(tenantId: string, month: number, ye
         }
 
         if (tuitionToCreate.length > 0) {
-            const { error: insertError } = await supabase
+            const { error: insertError } = await supabaseAdmin
                 .from('Tuition')
                 .insert(tuitionToCreate);
 
@@ -82,7 +82,7 @@ export async function payTuition(
 ) {
     try {
         // 1. Fetch Tuition details with Course settings
-        const { data: tuition, error: fetchError } = await supabase
+        const { data: tuition, error: fetchError } = await supabaseAdmin
             .from('Tuition')
             .select(`
                 *, 
@@ -117,7 +117,7 @@ export async function payTuition(
         const totalAmount = Number(tuition.amount) + lateFee;
 
         // 3. Update Tuition
-        const { error: updateError } = await supabase
+        const { error: updateError } = await supabaseAdmin
             .from('Tuition')
             .update({
                 status: 'PAID',
@@ -165,7 +165,7 @@ export async function createIndividualTuition(data: {
     depositSlipNumber?: string;
 }) {
     try {
-        const { data: tuition, error } = await supabase
+        const { data: tuition, error } = await supabaseAdmin
             .from('Tuition')
             .insert({
                 studentId: data.studentId,

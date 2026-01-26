@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
 export async function createTransaction(data: {
@@ -14,7 +14,7 @@ export async function createTransaction(data: {
     tenantId: string;
     date?: Date;
 }) {
-    const { data: transaction, error } = await supabase
+    const { data: transaction, error } = await supabaseAdmin
         .from('Transaction')
         .insert({
             ...data,
@@ -39,7 +39,7 @@ export async function createCategory(data: {
     color?: string; // Add color
     tenantId: string;
 }) {
-    const { data: category, error } = await supabase
+    const { data: category, error } = await supabaseAdmin
         .from('Category')
         .insert({
             ...data,
@@ -58,7 +58,7 @@ export async function createCategory(data: {
 }
 
 export async function deleteCategory(id: string) {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
         .from('Category')
         .delete()
         .eq('id', id);
@@ -72,7 +72,7 @@ export async function deleteCategory(id: string) {
 }
 
 export async function deleteTransaction(id: string) {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
         .from('Transaction')
         .delete()
         .eq('id', id);
@@ -96,7 +96,7 @@ export async function updateTransaction(id: string, data: Partial<{
     employeeId?: string;
     date?: Date;
 }>) {
-    const { data: transaction, error } = await supabase
+    const { data: transaction, error } = await supabaseAdmin
         .from('Transaction')
         .update(data)
         .eq('id', id)
@@ -117,7 +117,7 @@ export async function updateTransaction(id: string, data: Partial<{
 export async function generateMonthlyPayroll(tenantId: string) {
     try {
         // 1. Get all active employees with salary > 0
-        const { data: employees, error: empError } = await supabase
+        const { data: employees, error: empError } = await supabaseAdmin
             .from('Employee')
             .select('*')
             .eq('tenantId', tenantId)
@@ -136,7 +136,7 @@ export async function generateMonthlyPayroll(tenantId: string) {
 
         for (const emp of employees) {
             // Check if already exists
-            const { data: existing } = await supabase
+            const { data: existing } = await supabaseAdmin
                 .from('Payroll')
                 .select('id')
                 .eq('employeeId', emp.id)
@@ -145,7 +145,7 @@ export async function generateMonthlyPayroll(tenantId: string) {
                 .maybeSingle();
 
             if (!existing) {
-                await supabase.from('Payroll').insert({
+                await supabaseAdmin.from('Payroll').insert({
                     employeeId: emp.id,
                     amount: emp.salary,
                     date: new Date(),
@@ -166,7 +166,7 @@ export async function generateMonthlyPayroll(tenantId: string) {
 export async function processPayrollPayment(payrollId: string, categoryId: string, accountId: string, tenantId: string) {
     try {
         // 1. Get Payroll details
-        const { data: payroll, error: fetchError } = await supabase
+        const { data: payroll, error: fetchError } = await supabaseAdmin
             .from('Payroll')
             .select('*, employee:Employee(name)')
             .eq('id', payrollId)
@@ -176,7 +176,7 @@ export async function processPayrollPayment(payrollId: string, categoryId: strin
         if (payroll.status === 'PAID') throw new Error("Este pagamento já foi processado.");
 
         // 2. Update Payroll status
-        const { error: updateError } = await supabase
+        const { error: updateError } = await supabaseAdmin
             .from('Payroll')
             .update({ status: 'PAID', date: new Date() })
             .eq('id', payrollId);
