@@ -477,3 +477,50 @@ export async function enrollStudentInSubjects(data: {
     revalidatePath("/dashboard/academic");
     return inserted;
 }
+export async function getStudentFullProfile(studentId: string) {
+    try {
+        // 1. Fetch Student with Course
+        const { data: student, error: studentError } = await supabase
+            .from('Student')
+            .select(`
+                *,
+                course:Course (*)
+            `)
+            .eq('id', studentId)
+            .single();
+
+        if (studentError) throw studentError;
+
+        // 2. Fetch Enrollments with Subjects and Grades
+        const { data: enrollments, error: enrollError } = await supabase
+            .from('Enrollment')
+            .select(`
+                *,
+                subject:Subject (*),
+                grades:Grade (*)
+            `)
+            .eq('studentId', studentId);
+
+        if (enrollError) throw enrollError;
+
+        // 3. Fetch Tuitions (Financials)
+        const { data: tuitions, error: tuitionError } = await supabase
+            .from('Tuition')
+            .select('*')
+            .eq('studentId', studentId)
+            .order('dueDate', { ascending: false });
+
+        // Note: Tuitions might not exist if financial module hasn't generated them yet
+        // but we want to return what we have.
+
+        return {
+            success: true,
+            student,
+            enrollments: enrollments || [],
+            tuitions: tuitions || []
+        };
+    } catch (error: any) {
+        console.error("Error fetching student full profile:", error);
+        return { success: false, error: error.message };
+    }
+}

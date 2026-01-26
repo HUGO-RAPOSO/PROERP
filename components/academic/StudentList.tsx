@@ -1,12 +1,13 @@
 "use client";
 
-import { Edit2, Trash2, Mail, Phone, Loader2, BookOpen } from "lucide-react";
+import { Edit2, Trash2, Mail, Phone, Loader2, BookOpen, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { deleteStudent } from "@/lib/actions/academic";
 import BaseModal from "@/components/modals/BaseModal";
 import StudentForm from "@/components/modals/StudentForm";
 import EnrollmentForm from "@/components/modals/EnrollmentForm";
+import StudentOverviewModal from "@/components/modals/StudentOverviewModal";
 
 interface Student {
     id: string;
@@ -35,6 +36,7 @@ interface StudentListProps {
 export default function StudentList({ students, courses, subjects }: StudentListProps) {
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
     const [enrollingStudent, setEnrollingStudent] = useState<Student | null>(null);
+    const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
     const [loading, setLoading] = useState<string | null>(null);
 
     async function handleDelete(id: string) {
@@ -119,6 +121,13 @@ export default function StudentList({ students, courses, subjects }: StudentList
                                 <td className="px-8 py-5 text-right">
                                     <div className="flex justify-end gap-2">
                                         <button
+                                            onClick={() => setViewingStudent(student)}
+                                            className="p-2 hover:bg-primary-50 text-gray-400 hover:text-primary-600 rounded-lg transition-all"
+                                            title="Visão Geral do Aluno"
+                                        >
+                                            <Eye className="w-4 h-4" />
+                                        </button>
+                                        <button
                                             onClick={() => setEnrollingStudent(student)}
                                             className="p-2 hover:bg-green-50 text-gray-400 hover:text-green-600 rounded-lg transition-all"
                                             title="Matricular em Turma"
@@ -189,6 +198,16 @@ export default function StudentList({ students, courses, subjects }: StudentList
                         subjects={subjects}
                         onSuccess={() => setEnrollingStudent(null)}
                     />
+                )}
+            </BaseModal>
+            <BaseModal
+                isOpen={!!viewingStudent}
+                onClose={() => setViewingStudent(null)}
+                title={`Perfil de ${viewingStudent?.name}`}
+                size="lg"
+            >
+                {viewingStudent && (
+                    <StudentOverviewModal studentId={viewingStudent.id} />
                 )}
             </BaseModal>
         </div>
