@@ -3,6 +3,7 @@
 import { supabase } from "@/lib/supabase";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
+import { createTransaction } from "./financial";
 import bcrypt from "bcryptjs";
 
 export async function createStudent(data: {
@@ -14,12 +15,21 @@ export async function createStudent(data: {
     documentUrl?: string;
     enrollmentSlipUrl?: string;
     enrollmentSlipNumber?: string;
+    accountId?: string;
+    paymentDate?: Date;
 }) {
     try {
         const { data: student, error } = await supabase
             .from('Student')
             .insert({
-                ...data,
+                name: data.name,
+                email: data.email,
+                phone: data.phone,
+                courseId: data.courseId,
+                tenantId: data.tenantId,
+                documentUrl: data.documentUrl,
+                enrollmentSlipUrl: data.enrollmentSlipUrl,
+                enrollmentSlipNumber: data.enrollmentSlipNumber,
                 status: "ACTIVE",
             })
             .select()
@@ -28,6 +38,61 @@ export async function createStudent(data: {
         if (error) {
             console.error("Error creating student:", error);
             return { success: false, error: error.message };
+        }
+
+        // --- Financial Integration: Record Enrollment Fee ---
+        if (data.accountId) {
+            try {
+                // 1. Get the course to find the enrollment fee
+                const { data: course } = await supabase
+                    .from('Course')
+                    .select('name, enrollmentFee')
+                    .eq('id', data.courseId)
+                    .single();
+
+                if (course && Number(course.enrollmentFee) > 0) {
+                    // 2. Find or Create the "Matrícula/Propina" category
+                    let { data: category } = await supabase
+                        .from('Category')
+                        .select('id')
+                        .eq('tenantId', data.tenantId)
+                        .eq('name', 'Matrícula/Propina')
+                        .eq('type', 'INCOME')
+                        .maybeSingle();
+
+                    if (!category) {
+                        const { data: newCat, error: catError } = await supabase
+                            .from('Category')
+                            .insert({
+                                name: 'Matrícula/Propina',
+                                type: 'INCOME',
+                                tenantId: data.tenantId,
+                                color: '#10B981' // Success Green
+                            })
+                            .select()
+                            .single();
+
+                        if (!catError) category = newCat;
+                    }
+
+                    // 3. Create the Transaction
+                    if (category) {
+                        await createTransaction({
+                            description: `Matrícula - ${student.name} (${course.name})`,
+                            amount: Number(course.enrollmentFee),
+                            type: 'INCOME',
+                            categoryId: category.id,
+                            accountId: data.accountId,
+                            studentId: student.id,
+                            tenantId: data.tenantId,
+                            date: data.paymentDate || new Date()
+                        });
+                    }
+                }
+            } catch (finError) {
+                console.error("Non-blocking error integrating with finance:", finError);
+                // We don't fail student creation if financial integration fails
+            }
         }
 
         // Also create/sync User account if email exists

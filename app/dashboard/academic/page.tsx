@@ -72,6 +72,11 @@ export default async function AcademicPage() {
         .select('*, course:Course(name)')
         .or(`tenantId.eq.${tenantId},tenantId.is.null`);
 
+    const { data: accounts } = await supabase
+        .from('Account')
+        .select('*')
+        .eq('tenantId', tenantId);
+
     return (
         <AcademicManager
             tenantId={tenantId}
@@ -80,6 +85,7 @@ export default async function AcademicPage() {
             classes={formattedClasses || []}
             students={students || []}
             subjects={subjects || []}
+            accounts={accounts || []}
         />
     );
 }

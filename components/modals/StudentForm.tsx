@@ -14,6 +14,8 @@ const studentSchema = z.object({
     phone: z.string().optional(),
     courseId: z.string().min(1, "O curso é obrigatório"),
     enrollmentSlipNumber: z.string().optional(),
+    accountId: z.string().optional(),
+    paymentDate: z.string().optional(),
 });
 
 type StudentFormValues = z.infer<typeof studentSchema>;
@@ -23,9 +25,10 @@ interface StudentModalProps {
     onSuccess: () => void;
     initialData?: StudentFormValues & { id: string };
     courses: { id: string; name: string }[];
+    accounts: { id: string; name: string }[];
 }
 
-export default function StudentForm({ tenantId, onSuccess, initialData, courses }: StudentModalProps) {
+export default function StudentForm({ tenantId, onSuccess, initialData, courses, accounts }: StudentModalProps) {
     const [loading, setLoading] = useState(false);
     const [extraDocs, setExtraDocs] = useState<{ type: string, file: File | null }[]>([
         { type: "BI/Passaporte", file: null }
@@ -66,10 +69,13 @@ export default function StudentForm({ tenantId, onSuccess, initialData, courses 
                 });
                 if (!res.success) throw new Error(res.error || "Erro ao atualizar aluno");
             } else {
+                const { accountId, paymentDate, ...cleanValues } = values;
                 const res = await createStudent({
-                    ...values,
+                    ...cleanValues,
                     tenantId,
-                    enrollmentSlipUrl
+                    enrollmentSlipUrl,
+                    accountId: accountId,
+                    paymentDate: paymentDate ? new Date(paymentDate) : undefined
                 });
                 if (!res.success) throw new Error(res.error || "Erro ao criar aluno");
                 studentId = res.data.id;
@@ -303,6 +309,36 @@ export default function StudentForm({ tenantId, onSuccess, initialData, courses 
                                 />
                             </div>
                         </div>
+
+                        {!initialData && (
+                            <>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-700 underline decoration-primary-300 decoration-2">Conta de Depósito (Financeiro)</label>
+                                    <select
+                                        {...form.register("accountId")}
+                                        className="w-full px-4 py-3 bg-primary-50/30 border border-primary-100 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all font-medium text-gray-700"
+                                    >
+                                        <option value="">Nenhuma (Não gera financeiro)</option>
+                                        {accounts.map((acc) => (
+                                            <option key={acc.id} value={acc.id}>
+                                                {acc.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <p className="text-[10px] text-primary-600 font-medium px-1">Selecione para registrar automaticamente o valor da matrícula.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-700">Data do Pagamento</label>
+                                    <input
+                                        type="date"
+                                        {...form.register("paymentDate")}
+                                        defaultValue={new Date().toISOString().split('T')[0]}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
+                                    />
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

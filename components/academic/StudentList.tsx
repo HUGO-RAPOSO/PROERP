@@ -31,9 +31,10 @@ interface StudentListProps {
     students: Student[];
     courses: { id: string; name: string }[];
     subjects: any[];
+    accounts: any[];
 }
 
-export default function StudentList({ students, courses, subjects }: StudentListProps) {
+export default function StudentList({ students, courses, subjects, accounts }: StudentListProps) {
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
     const [enrollingStudent, setEnrollingStudent] = useState<Student | null>(null);
     const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
@@ -172,6 +173,7 @@ export default function StudentList({ students, courses, subjects }: StudentList
                     <StudentForm
                         tenantId={editingStudent.tenantId}
                         courses={courses}
+                        accounts={accounts}
                         onSuccess={() => setEditingStudent(null)}
                         initialData={{
                             id: editingStudent.id,
