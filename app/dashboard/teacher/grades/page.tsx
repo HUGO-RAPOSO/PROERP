@@ -198,8 +198,7 @@ export default function TeacherGradesPage() {
                                                         <input
                                                             type="number"
                                                             className="w-16 p-2 border rounded text-center"
-                                                            value={p1}
-                                                            onChange={(e) => { }}
+                                                            defaultValue={p1}
                                                             onBlur={(e) => handleSaveGrade(enr.id, "P1", e.target.value)}
                                                         />
                                                     </td>
@@ -207,8 +206,7 @@ export default function TeacherGradesPage() {
                                                         <input
                                                             type="number"
                                                             className="w-16 p-2 border rounded text-center"
-                                                            value={p2}
-                                                            onChange={(e) => { }}
+                                                            defaultValue={p2}
                                                             onBlur={(e) => handleSaveGrade(enr.id, "P2", e.target.value)}
                                                         />
                                                     </td>
@@ -216,8 +214,7 @@ export default function TeacherGradesPage() {
                                                         <input
                                                             type="number"
                                                             className="w-16 p-2 border rounded text-center"
-                                                            value={t1}
-                                                            onChange={(e) => { }}
+                                                            defaultValue={t1}
                                                             onBlur={(e) => handleSaveGrade(enr.id, "T1", e.target.value)}
                                                         />
                                                     </td>
@@ -229,8 +226,7 @@ export default function TeacherGradesPage() {
                                                             <input
                                                                 type="number"
                                                                 className="w-16 p-2 border rounded text-center border-orange-200 bg-orange-50"
-                                                                value={exame}
-                                                                onChange={(e) => { }}
+                                                                defaultValue={exame}
                                                                 onBlur={(e) => handleSaveGrade(enr.id, "EXAME", e.target.value)}
                                                             />
                                                         ) : <span className="text-gray-300">-</span>}
@@ -240,8 +236,7 @@ export default function TeacherGradesPage() {
                                                             <input
                                                                 type="number"
                                                                 className="w-16 p-2 border rounded text-center border-red-200 bg-red-50"
-                                                                value={recorrencia}
-                                                                onChange={(e) => { }}
+                                                                defaultValue={recorrencia}
                                                                 onBlur={(e) => handleSaveGrade(enr.id, "RECORRENCIA", e.target.value)}
                                                             />
                                                         ) : <span className="text-gray-300">-</span>}
