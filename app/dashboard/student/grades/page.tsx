@@ -91,7 +91,7 @@ export default function StudentGradesPage() {
                             <h2 className="text-lg font-bold mb-4">{year}º Ano</h2>
 
                             <Accordion type="single" collapsible className="w-full">
-                                {byYear[parseInt(year)].map(enr => {
+                                {byYear[parseInt(year)].map((enr: any) => {
                                     const { text: statusText, color: statusColor } = calculateStatus(enr);
                                     return (
                                         <AccordionItem key={enr.id} value={enr.id}>
