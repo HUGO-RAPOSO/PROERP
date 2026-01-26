@@ -419,6 +419,8 @@ export async function getStudentGrades(studentId: string) {
                 id,
                 name,
                 code,
+                year,
+                semester,
                 examWaiverPossible,
                 waiverGrade,
                 exclusionGrade
