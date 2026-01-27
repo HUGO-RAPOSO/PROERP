@@ -163,8 +163,7 @@ export default function TuitionList({ tuitions, categories, accounts, tenantId, 
                                         {isHistory ? (
                                             <div className="flex items-center justify-end gap-3">
                                                 <a
-                                                    href={`/dashboard/reports/print/receipt/${item.id}`}
-                                                    target="_blank"
+                                                    href={`/print/receipt/${item.id}`}
                                                     className="p-2 bg-white border border-gray-200 text-gray-400 rounded-lg hover:border-gray-900 hover:text-gray-900 transition-all shadow-sm"
                                                     title="Imprimir Recibo"
                                                 >

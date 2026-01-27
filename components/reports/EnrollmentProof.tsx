@@ -2,7 +2,7 @@
 
 import React from 'react';
 import DocumentLayout from './DocumentLayout';
-
+import { Printer } from 'lucide-react';
 interface EnrollmentProofProps {
     student: {
         name: string;
@@ -29,11 +29,18 @@ export default function EnrollmentProof({ student, tenantName }: EnrollmentProof
             subtitle="Declaração de Vínculo Académico"
             tenantName={tenantName}
         >
-            <div className="flex justify-end mb-4 print:hidden">
+            <div className="flex justify-between items-center mb-6 print:hidden">
+                <button
+                    onClick={() => window.history.back()}
+                    className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-bold text-xs"
+                >
+                    ← Voltar ao Sistema
+                </button>
                 <button
                     onClick={() => window.print()}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg font-bold text-xs"
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg font-bold text-xs shadow-lg"
                 >
+                    <Printer className="w-4 h-4" />
                     Confirmar Impressão / PDF
                 </button>
             </div>

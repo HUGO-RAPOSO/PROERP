@@ -3,6 +3,7 @@
 import React from 'react';
 import DocumentLayout from './DocumentLayout';
 import { formatCurrency } from '@/lib/utils';
+import { Printer } from 'lucide-react';
 
 interface FinancialReceiptProps {
     transaction: {
@@ -31,11 +32,18 @@ export default function FinancialReceipt({ transaction, tenantName }: FinancialR
             subtitle={`Ref: ${transaction.reference || 'REC-' + Math.random().toString(36).substring(7).toUpperCase()}`}
             tenantName={tenantName}
         >
-            <div className="flex justify-end pt-4 px-6 print:hidden">
+            <div className="flex justify-between items-center pt-4 px-6 print:hidden">
+                <button
+                    onClick={() => window.history.back()}
+                    className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-bold text-xs"
+                >
+                    ← Voltar ao Sistema
+                </button>
                 <button
                     onClick={() => window.print()}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg font-bold text-xs"
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg font-bold text-xs shadow-lg"
                 >
+                    <Printer className="w-4 h-4" />
                     Confirmar Impressão / PDF
                 </button>
             </div>

@@ -132,8 +132,7 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
                                 <div className="flex justify-between items-center mb-2">
                                     <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Documentação</h4>
                                     <a
-                                        href={`/dashboard/reports/print/enrollment/${student.id}`}
-                                        target="_blank"
+                                        href={`/print/enrollment/${student.id}`}
                                         className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-lg hover:bg-gray-800 transition-all shadow-sm uppercase tracking-widest"
                                     >
                                         <Printer className="w-3 h-3" />
@@ -304,8 +303,7 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
                                                     )}
                                                     {t.status === 'PAID' && (
                                                         <a
-                                                            href={`/dashboard/reports/print/receipt/${t.id}`}
-                                                            target="_blank"
+                                                            href={`/print/receipt/${t.id}`}
                                                             className="text-gray-400 hover:text-gray-900 transition-colors"
                                                             title="Imprimir Recibo"
                                                         >

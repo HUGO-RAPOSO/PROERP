@@ -32,29 +32,22 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
         <div className="space-y-8">
             <style jsx global>{`
                 @media print {
-                    /* Hide everything except the main content area */
-                    nav, 
-                    aside, 
-                    .no-print,
-                    .print-hidden,
-                    [role="navigation"] {
+                    nav, aside, header, .no-print, .print-hidden, [role="navigation"] {
                         display: none !important;
                     }
-
+                    div.pl-64 {
+                        padding-left: 0 !important;
+                    }
+                    main {
+                        padding: 0 !important;
+                        margin: 0 !important;
+                    }
                     body {
                         background: white !important;
                     }
-
-                    main {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                    }
-
-                    .shadow-lg, .shadow-xl {
+                    .shadow-lg, .shadow-xl, .shadow-2xl {
                         box-shadow: none !important;
                     }
-                    
-                    /* Ensure backgrounds like cards show up in PDF */
                     * {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
