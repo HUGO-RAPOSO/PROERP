@@ -1,6 +1,6 @@
 "use client";
 
-import { GraduationCap, Users, Clock, Edit2, Trash2, Loader2, Plus } from "lucide-react";
+import { GraduationCap, Users, Clock, Edit2, Trash2, Loader2, Plus, Printer } from "lucide-react";
 import { useState } from "react";
 import { deleteClass } from "@/lib/actions/academic";
 import BaseModal from "@/components/modals/BaseModal";
@@ -111,6 +111,14 @@ export default function ClassGrid({ classes, teachers = [], courses = [], tenant
                                                 <span className="text-xs text-gray-500 block">{cls.teacher?.name || "Sem Professor"}</span>
                                             </div>
                                             <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                                <a
+                                                    href={`/dashboard/academic/print/grades/${cls.id}`}
+                                                    target="_blank"
+                                                    className="p-1 text-gray-400 hover:text-gray-600"
+                                                    title="Imprimir Pauta"
+                                                >
+                                                    <Printer className="w-3.5 h-3.5" />
+                                                </a>
                                                 <button onClick={() => setEditingClass(cls)} className="p-1 text-gray-400 hover:text-primary-600"><Edit2 className="w-3.5 h-3.5" /></button>
                                                 <button onClick={() => handleDelete(cls.id)} disabled={loading === cls.id} className="p-1 text-gray-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
                                             </div>

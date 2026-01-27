@@ -671,3 +671,53 @@ export async function getStudentFullProfile(studentId: string) {
         return { success: false, error: error.message };
     }
 }
+
+export async function getClassGradesForReport(classId: string) {
+    // 1. Fetch Class and Subject details
+    const { data: cls, error: classError } = await supabase
+        .from('Class')
+        .select(`
+            name,
+            schedule,
+            subject:Subject (
+                name,
+                year,
+                semester,
+                course:Course(name),
+                examWaiverPossible,
+                waiverGrade,
+                exclusionGrade
+            ),
+            teacher:Teacher (name)
+        `)
+        .eq('id', classId)
+        .single();
+
+    if (classError || !cls) {
+        console.error("Error fetching class for report:", classError);
+        return null;
+    }
+
+    // 2. Fetch Enrollments explicitly LINKED to this class (and thus subject)
+    const { data: enrollments, error } = await supabase
+        .from('Enrollment')
+        .select(`
+            id,
+            studentId,
+            student:Student (id, name, enrollmentSlipNumber),
+            grades:Grade (*),
+            status 
+        `)
+        .eq('classId', classId) // CRITICAL: Filter by ClassId, not SubjectId
+        .order('student(name)', { ascending: true }); // Sort by Student Name
+
+    if (error) {
+        console.error("Error fetching report enrollments:", error);
+        throw new Error(error.message);
+    }
+
+    return {
+        classDetails: cls,
+        enrollments: enrollments || []
+    };
+}
