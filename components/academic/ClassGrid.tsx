@@ -110,7 +110,7 @@ export default function ClassGrid({ classes, teachers = [], courses = [], tenant
                                                 <span className="font-bold text-gray-800 text-sm block">{cls.subject?.name || "Disciplina Removida"}</span>
                                                 <span className="text-xs text-gray-500 block">{cls.teacher?.name || "Sem Professor"}</span>
                                             </div>
-                                            <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                            <div className="flex gap-1 opacity-100 transition-opacity">
                                                 <a
                                                     href={`/dashboard/academic/print/grades/${cls.id}`}
                                                     target="_blank"

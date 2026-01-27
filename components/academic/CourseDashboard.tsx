@@ -9,7 +9,8 @@ import {
     ChevronRight,
     Search,
     GraduationCap,
-    Loader2
+    Loader2,
+    Printer
 } from "lucide-react";
 import SubjectManager from "./SubjectManager";
 import { getCourseDashboardData } from "@/lib/actions/academic";
@@ -179,8 +180,18 @@ export default function CourseDashboard({ courseId, onClose }: CourseDashboardPr
                                                 <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest">{cls.subject?.name}</span>
                                                 <h4 className="text-xl font-black text-gray-900 leading-tight">{cls.name}</h4>
                                             </div>
-                                            <div className="p-3 bg-gray-50 text-gray-400 rounded-2xl transition-colors group-hover:bg-primary-50 group-hover:text-primary-500">
-                                                <Calendar className="w-5 h-5" />
+                                            <div className="flex gap-2">
+                                                <a
+                                                    href={`/dashboard/academic/print/grades/${cls.id}`}
+                                                    target="_blank"
+                                                    className="p-3 bg-gray-50 text-gray-400 rounded-2xl transition-colors hover:bg-black hover:text-white"
+                                                    title="Imprimir Pauta"
+                                                >
+                                                    <Printer className="w-5 h-5" />
+                                                </a>
+                                                <div className="p-3 bg-gray-50 text-gray-400 rounded-2xl transition-colors group-hover:bg-primary-50 group-hover:text-primary-500">
+                                                    <Calendar className="w-5 h-5" />
+                                                </div>
                                             </div>
                                         </div>
 
