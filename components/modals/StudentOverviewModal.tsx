@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getStudentFullProfile } from "@/lib/actions/academic";
-import { Loader2, User, BookOpen, CreditCard, Calendar, CheckCircle, AlertCircle, TrendingUp, FileText } from "lucide-react";
+import { Loader2, User, BookOpen, CreditCard, Calendar, CheckCircle, AlertCircle, TrendingUp, FileText, Printer } from "lucide-react";
 import { getPublicUrl } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
@@ -129,7 +129,16 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
                             </div>
 
                             <div className="space-y-4">
-                                <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Documentação de Matrícula</h4>
+                                <div className="flex justify-between items-center mb-2">
+                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Documentação</h4>
+                                    <button
+                                        onClick={() => window.open(`/dashboard/reports/print/enrollment/${student.id}`, '_blank')}
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-lg hover:bg-gray-800 transition-all shadow-sm uppercase tracking-widest"
+                                    >
+                                        <Printer className="w-3 h-3" />
+                                        Imprimir Comprovativo
+                                    </button>
+                                </div>
                                 <div className="grid grid-cols-1 gap-3">
                                     {/* Primary Enrollment Slip */}
                                     {student.enrollmentSlipUrl && (
@@ -252,7 +261,7 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
                                         <th className="px-6 py-4">Status</th>
                                         <th className="px-6 py-4">Data Pagto</th>
                                         <th className="px-6 py-4">Conta</th>
-                                        <th className="px-6 py-4">Doc</th>
+                                        <th className="px-6 py-4">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -280,18 +289,28 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
                                                 {t.account?.name || '-'}
                                             </td>
                                             <td className="px-6 py-4 text-sm">
-                                                {t.depositSlipUrl ? (
-                                                    <a
-                                                        href={getPublicUrl(t.depositSlipUrl)}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-primary-600 hover:text-primary-800 flex items-center gap-1 font-bold"
-                                                        title={`Talão: ${t.depositSlipNumber || 'N/A'}`}
-                                                    >
-                                                        <FileText className="w-4 h-4" />
-                                                        Ver
-                                                    </a>
-                                                ) : '-'}
+                                                <div className="flex items-center gap-3">
+                                                    {t.depositSlipUrl && (
+                                                        <a
+                                                            href={getPublicUrl(t.depositSlipUrl)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-primary-600 hover:text-primary-800 transition-colors"
+                                                            title={`Ver Talão: ${t.depositSlipNumber || 'N/A'}`}
+                                                        >
+                                                            <FileText className="w-4 h-4" />
+                                                        </a>
+                                                    )}
+                                                    {t.status === 'PAID' && (
+                                                        <button
+                                                            onClick={() => window.open(`/dashboard/reports/print/receipt/${t.id}`, '_blank')}
+                                                            className="text-gray-400 hover:text-gray-900 transition-colors"
+                                                            title="Imprimir Recibo"
+                                                        >
+                                                            <Printer className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     )) : (

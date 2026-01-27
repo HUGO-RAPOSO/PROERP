@@ -1,0 +1,48 @@
+import { auth } from "@/auth";
+import { redirect, notFound } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import EnrollmentProof from "@/components/reports/EnrollmentProof";
+
+export default async function PrintEnrollmentPage({ params }: { params: { id: string } }) {
+    const session = await auth();
+
+    if (!session || !session.user) {
+        redirect("/auth/login");
+    }
+
+    const tenantId = session.user.tenantId;
+
+    // Fetch student data with course info
+    const { data: student } = await supabase
+        .from('Student')
+        .select('*, course:Course(name)')
+        .eq('id', params.id)
+        .eq('tenantId', tenantId)
+        .single();
+
+    if (!student) {
+        notFound();
+    }
+
+    const { data: tenant } = await supabase
+        .from('Tenant')
+        .select('name')
+        .eq('id', tenantId)
+        .single();
+
+    const studentData = {
+        name: student.name,
+        email: student.email,
+        phone: student.phone,
+        courseName: student.course?.name,
+        enrollmentDate: new Date(student.createdAt).toLocaleDateString(),
+        enrollmentSlipNumber: student.enrollmentSlipNumber
+    };
+
+    return (
+        <div className="bg-white min-h-screen">
+            <EnrollmentProof student={studentData} tenantName={tenant?.name} />
+            <script dangerouslySetInnerHTML={{ __html: `window.onload = () => { window.print(); }` }} />
+        </div>
+    );
+}

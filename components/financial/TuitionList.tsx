@@ -3,7 +3,7 @@
 import { formatCurrency } from "@/lib/utils";
 import { payTuition } from "@/lib/actions/tuition";
 import { useState } from "react";
-import { Loader2, CreditCard, AlertCircle, CheckCircle, Landmark, FileText, Download } from "lucide-react";
+import { Loader2, CreditCard, AlertCircle, CheckCircle, Landmark, FileText, Download, Printer } from "lucide-react";
 import { getPublicUrl } from "@/lib/storage";
 import Link from "next/link";
 import PaymentModal from "../modals/PaymentModal";
@@ -161,9 +161,18 @@ export default function TuitionList({ tuitions, categories, accounts, tenantId, 
                                     </td>
                                     <td className="px-8 py-5 text-right">
                                         {isHistory ? (
-                                            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-xl text-[10px] font-black uppercase tracking-tighter ring-1 ring-green-200">
-                                                <CheckCircle className="w-3 h-3" />
-                                                Regular
+                                            <div className="flex items-center justify-end gap-3">
+                                                <button
+                                                    onClick={() => window.open(`/dashboard/reports/print/receipt/${item.id}`, '_blank')}
+                                                    className="p-2 bg-white border border-gray-200 text-gray-400 rounded-lg hover:border-gray-900 hover:text-gray-900 transition-all shadow-sm"
+                                                    title="Imprimir Recibo"
+                                                >
+                                                    <Printer className="w-4 h-4" />
+                                                </button>
+                                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-xl text-[10px] font-black uppercase tracking-tighter ring-1 ring-green-200">
+                                                    <CheckCircle className="w-3 h-3" />
+                                                    Regular
+                                                </div>
                                             </div>
                                         ) : (
                                             <div className="flex items-center justify-end gap-3">
