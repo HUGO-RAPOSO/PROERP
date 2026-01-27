@@ -87,13 +87,11 @@ export default async function ReportsPage() {
             categoryName: (t.category as any)?.name || 'Geral',
             accountName: (t.account as any)?.name || 'N/A',
             status: t.status || 'CONCLUÍDO'
-        }))
+        })),
+        tenantName: tenant?.name || 'Minha Instituição'
     };
 
-    tenantName: tenant?.name || 'Minha Instituição'
-};
-
-return (
-    <RevenueReport data={reportData} />
-);
+    return (
+        <RevenueReport data={reportData} />
+    );
 }
