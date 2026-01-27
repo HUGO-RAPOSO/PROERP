@@ -13,6 +13,12 @@ export default async function ReportsPage() {
 
     const tenantId = session.user.tenantId;
 
+    const { data: tenant } = await supabase
+        .from('Tenant')
+        .select('name')
+        .eq('id', tenantId)
+        .single();
+
     const { data: transactions } = await supabase
         .from('Transaction')
         .select(`
@@ -84,7 +90,10 @@ export default async function ReportsPage() {
         }))
     };
 
-    return (
-        <RevenueReport data={reportData} />
-    );
+    tenantName: tenant?.name || 'Minha Instituição'
+};
+
+return (
+    <RevenueReport data={reportData} />
+);
 }

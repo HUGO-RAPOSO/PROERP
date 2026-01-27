@@ -26,6 +26,7 @@ interface RevenueData {
     incomesByCategory: { name: string; value: number; color: string }[];
     monthlyData: { month: string; incomes: number; expenses: number }[];
     transactions: any[];
+    tenantName?: string;
 }
 
 export default function RevenueReport({ data }: { data: RevenueData }) {
@@ -106,7 +107,7 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
                         top: 0;
                         width: 100vw;
                         height: 100vh;
-                        padding: 20px !important;
+                        padding: 10mm !important;
                         margin: 0 !important;
                         background: white !important;
                         z-index: 9999;
@@ -119,11 +120,23 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
 
                     /* Hide specific internal UI elements even within the container */
                     .print-hidden,
+                    .no-print,
                     button,
                     nav,
                     aside,
-                    header {
+                    header,
+                    .charts-section,
+                    .stats-cards,
+                    .filters-section {
                         display: none !important;
+                    }
+
+                    /* Show print-only header */
+                    .print-header {
+                        display: block !important;
+                        margin-bottom: 20px;
+                        border-bottom: 2px solid #000;
+                        padding-bottom: 10px;
                     }
 
                     /* Ensure background graphics are printed */
@@ -132,13 +145,46 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
                         print-color-adjust: exact !important;
                     }
                     
-                    /* Clean up shadows for print */
+                    /* Clean up shadows and borders for print */
                     .shadow-lg, .shadow-xl, .shadow-2xl {
                         box-shadow: none !important;
-                        border: 1px solid #e5e7eb !important;
+                        border: none !important;
+                    }
+
+                    table {
+                        width: 100% !important;
+                        border: 1px solid #000 !important;
+                    }
+
+                    th, td {
+                        border: 1px solid #000 !important;
+                        color: #000 !important;
+                    }
+                    
+                    tr {
+                        background: transparent !important;
                     }
                 }
             `}</style>
+
+            {/* Print Only Header */}
+            <div className="hidden print-header">
+                <div className="flex justify-between items-end">
+                    <div>
+                        <h1 className="text-2xl font-bold text-black uppercase">{data.tenantName}</h1>
+                        <h2 className="text-xl font-medium text-black mt-1">Relatório Financeiro Mensal</h2>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-sm text-black">
+                            <span className="font-bold">Período:</span> {startDate ? new Date(startDate).toLocaleDateString() : 'Início'} a {endDate ? new Date(endDate).toLocaleDateString() : 'Hoje'}
+                        </p>
+                        <p className="text-sm text-black">
+                            <span className="font-bold">Gerado em:</span> {new Date().toLocaleString()}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Análise Institucional</h2>
@@ -162,8 +208,9 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
                     </button>
                 </div>
             </div>
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            {/* Summary Cards - Hidden in Print */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stats-cards">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -230,8 +277,8 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
                 </motion.div>
             </div>
 
-            {/* Main Analysis Area */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Analysis Area - Hidden in Print */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 charts-section">
                 {/* Trend Analysis */}
                 <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
                     <div className="flex justify-between items-center mb-10">
@@ -329,7 +376,7 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
 
             {/* Detailed Transactions Table */}
             <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
-                <div className="p-8 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-gray-50/50">
+                <div className="p-8 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-gray-50/50 print:hidden">
                     <div>
                         <h4 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                             <Landmark className="w-6 h-6 text-primary-500" />
@@ -338,7 +385,7 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
                         <p className="text-sm text-gray-500">Histórico completo e detalhado de movimentações.</p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 print:hidden">
+                    <div className="flex flex-wrap items-center gap-3 print:hidden filters-section">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
@@ -373,7 +420,7 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
                     </div>
                 </div>
 
-                <div className="p-8 border-b border-gray-100 flex flex-wrap items-center gap-4 bg-white print:hidden">
+                <div className="p-8 border-b border-gray-100 flex flex-wrap items-center gap-4 bg-white print:hidden filters-section">
                     <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-gray-400" />
                         <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Período:</span>
@@ -484,11 +531,26 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
                     </table>
                 </div>
 
-                <div className="p-8 bg-gray-50/50 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-widest">
+                <div className="p-8 bg-gray-50/50 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-widest print:hidden">
                     <span>Total de Registos: {filteredTransactions.length}</span>
                     <div className="flex gap-6">
                         <span className="text-green-600">Total Entradas: {formatCurrency(filteredTransactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + Number(t.amount), 0))}</span>
                         <span className="text-red-600">Total Saídas: {formatCurrency(filteredTransactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + Number(t.amount), 0))}</span>
+                    </div>
+                </div>
+
+                {/* Print Only Footer for Totals */}
+                <div className="hidden print:flex justify-between items-center border-t border-black pt-4 mt-4">
+                    <p className="text-sm font-medium">Total Registos: {filteredTransactions.length}</p>
+                    <div className="flex gap-8">
+                        <p className="text-sm font-bold">Total Entradas: {formatCurrency(filteredTransactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + Number(t.amount), 0))}</p>
+                        <p className="text-sm font-bold">Total Saídas: {formatCurrency(filteredTransactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + Number(t.amount), 0))}</p>
+                        <p className="text-sm font-bold border-l border-black pl-4">
+                            Saldo Líquido: {formatCurrency(
+                                filteredTransactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + Number(t.amount), 0) -
+                                filteredTransactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + Number(t.amount), 0)
+                            )}
+                        </p>
                     </div>
                 </div>
             </div>
