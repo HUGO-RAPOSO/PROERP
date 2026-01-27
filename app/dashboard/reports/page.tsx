@@ -22,22 +22,26 @@ export default async function ReportsPage() {
     const totalExpenses = transactions?.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
     const netProfit = totalIncomes - totalExpenses;
 
-    const incomesByCategory = Array.from((transactions || [])
+    const revenueMap = (transactions || [])
         .filter(t => t.type === 'INCOME')
         .reduce((acc, t) => {
-            const name = t.category?.name || 'Geral';
+            const name = (t.category as any)?.name || 'Geral';
             acc.set(name, (acc.get(name) || 0) + Number(t.amount || 0));
             return acc;
-        }, new Map<string, number>())
-    ).map(([name, value], idx) => ({
-        name,
-        value,
-        color: ['#0ea5e9', '#d946ef', '#10B981', '#F59E0B', '#6366F1'][idx % 5]
-    })).sort((a, b) => b.value - a.value);
+        }, new Map<string, number>());
+
+    const incomesByCategory = Array.from(revenueMap).map((entry, idx) => {
+        const [name, value] = entry as [string, number];
+        return {
+            name,
+            value: Number(value),
+            color: ['#0ea5e9', '#d946ef', '#10B981', '#F59E0B', '#6366F1'][idx % 5]
+        };
+    }).sort((a, b) => b.value - a.value);
 
     // Monthly data for the last 6 months
     const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    const monthlyData = [];
+    const monthlyData: { month: string; incomes: number; expenses: number }[] = [];
     const now = new Date();
 
     for (let i = 5; i >= 0; i--) {
@@ -57,15 +61,15 @@ export default async function ReportsPage() {
 
         monthlyData.push({
             month: monthNames[mIdx],
-            incomes: monthlyIncomes,
-            expenses: monthlyExpenses
+            incomes: Number(monthlyIncomes),
+            expenses: Number(monthlyExpenses)
         });
     }
 
     const reportData = {
-        totalIncomes,
-        totalExpenses,
-        netProfit,
+        totalIncomes: Number(totalIncomes),
+        totalExpenses: Number(totalExpenses),
+        netProfit: Number(netProfit),
         incomesByCategory,
         monthlyData
     };
