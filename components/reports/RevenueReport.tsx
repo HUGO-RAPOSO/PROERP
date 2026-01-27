@@ -107,10 +107,11 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
                         top: 0;
                         width: 100vw;
                         height: 100vh;
-                        padding: 10mm !important;
+                        padding: 15mm !important; /* Increased padding slightly */
                         margin: 0 !important;
                         background: white !important;
                         z-index: 9999;
+                        font-family: 'Times New Roman', Times, serif !important; /* Professional Serif for print */
                     }
 
                     @page {
@@ -135,14 +136,15 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
                     .print-header {
                         display: block !important;
                         margin-bottom: 20px;
-                        border-bottom: 2px solid #000;
-                        padding-bottom: 10px;
+                        border-bottom: 3px solid #000; /* Thicker separation */
+                        padding-bottom: 15px;
                     }
 
                     /* Ensure background graphics are printed */
                     * {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
+                        color: #000 !important; /* Force black text */
                     }
                     
                     /* Clean up shadows and borders for print */
@@ -151,18 +153,38 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
                         border: none !important;
                     }
 
+                    /* Table Styling */
                     table {
                         width: 100% !important;
+                        border-collapse: collapse !important;
+                        border: 1px solid #000 !important;
+                        margin-top: 10px;
+                        font-size: 11px !important; /* Optimal print font size */
+                    }
+
+                    th {
+                        background-color: #2e2e2e !important;
+                        color: white !important;
+                        font-weight: bold;
+                        text-transform: uppercase;
+                        padding: 8px !important;
                         border: 1px solid #000 !important;
                     }
 
-                    th, td {
+                    td {
                         border: 1px solid #000 !important;
+                        padding: 6px 8px !important;
                         color: #000 !important;
                     }
                     
-                    tr {
-                        background: transparent !important;
+                    /* Zebra Striping */
+                    tr:nth-child(even) {
+                        background-color: #f3f3f3 !important;
+                    }
+
+                    /* Grid Lines fix */
+                    tr, td, th {
+                        border-color: #000 !important;
                     }
                 }
             `}</style>
