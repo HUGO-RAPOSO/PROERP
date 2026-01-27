@@ -85,60 +85,57 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
     };
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8" id="revenue-report-container">
             <style jsx global>{`
                 @media print {
+                    /* Nuclear Option: Hide everything by default */
+                    body * {
+                        visibility: hidden;
+                    }
+
+                    /* Only show the report container and its children */
+                    #revenue-report-container,
+                    #revenue-report-container * {
+                        visibility: visible;
+                    }
+
+                    /* Position the report at the top left to fill the page */
+                    #revenue-report-container {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100vw;
+                        height: 100vh;
+                        padding: 20px !important;
+                        margin: 0 !important;
+                        background: white !important;
+                        z-index: 9999;
+                    }
+
                     @page {
                         size: landscape;
                         margin: 10mm;
                     }
 
-                    /* Hide UI elements more aggressively */
-                    nav, 
-                    aside, 
-                    header, 
-                    footer,
-                    .no-print, 
-                    .print-hidden, 
-                    [role="navigation"],
-                    [role="banner"],
-                    button {
+                    /* Hide specific internal UI elements even within the container */
+                    .print-hidden,
+                    button,
+                    nav,
+                    aside,
+                    header {
                         display: none !important;
                     }
 
-                    /* Reset the main content layout and padding */
-                    div.pl-64,
-                    .pl-64,
-                    .ml-64 {
-                        padding-left: 0 !important;
-                        margin-left: 0 !important;
-                    }
-
-                    main {
-                        padding: 0 !important;
-                        margin: 0 !important;
-                        width: 100% !important;
-                        max-width: none !important;
-                    }
-
-                    body {
-                        background: white !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                    }
-
-                    .shadow-lg, .shadow-xl, .shadow-2xl {
-                        box-shadow: none !important;
-                    }
-
+                    /* Ensure background graphics are printed */
                     * {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                     }
-
-                    /* Ensure charts and table fill width in landscape */
-                    .grid {
-                        width: 100% !important;
+                    
+                    /* Clean up shadows for print */
+                    .shadow-lg, .shadow-xl, .shadow-2xl {
+                        box-shadow: none !important;
+                        border: 1px solid #e5e7eb !important;
                     }
                 }
             `}</style>
