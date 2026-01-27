@@ -131,13 +131,14 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center mb-2">
                                     <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Documentação</h4>
-                                    <button
-                                        onClick={() => window.open(`/dashboard/reports/print/enrollment/${student.id}`, '_blank')}
+                                    <a
+                                        href={`/dashboard/reports/print/enrollment/${student.id}`}
+                                        target="_blank"
                                         className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-lg hover:bg-gray-800 transition-all shadow-sm uppercase tracking-widest"
                                     >
                                         <Printer className="w-3 h-3" />
                                         Imprimir Comprovativo
-                                    </button>
+                                    </a>
                                 </div>
                                 <div className="grid grid-cols-1 gap-3">
                                     {/* Primary Enrollment Slip */}
@@ -302,13 +303,14 @@ export default function StudentOverviewModal({ studentId }: StudentOverviewModal
                                                         </a>
                                                     )}
                                                     {t.status === 'PAID' && (
-                                                        <button
-                                                            onClick={() => window.open(`/dashboard/reports/print/receipt/${t.id}`, '_blank')}
+                                                        <a
+                                                            href={`/dashboard/reports/print/receipt/${t.id}`}
+                                                            target="_blank"
                                                             className="text-gray-400 hover:text-gray-900 transition-colors"
                                                             title="Imprimir Recibo"
                                                         >
                                                             <Printer className="w-4 h-4" />
-                                                        </button>
+                                                        </a>
                                                     )}
                                                 </div>
                                             </td>

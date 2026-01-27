@@ -1,9 +1,11 @@
 import { auth } from "@/auth";
 import { redirect, notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import EnrollmentProof from "@/components/reports/EnrollmentProof";
 
-export default async function PrintEnrollmentPage({ params }: { params: { id: string } }) {
+export default async function PrintEnrollmentPage(props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     const session = await auth();
 
     if (!session || !session.user) {
@@ -12,15 +14,18 @@ export default async function PrintEnrollmentPage({ params }: { params: { id: st
 
     const tenantId = session.user.tenantId;
 
+    const client = supabaseAdmin || supabase;
+
     // Fetch student data with course info
-    const { data: student } = await supabase
+    const { data: student, error } = await client
         .from('Student')
         .select('*, course:Course(name)')
         .eq('id', params.id)
         .eq('tenantId', tenantId)
         .single();
 
-    if (!student) {
+    if (error || !student) {
+        console.error("Print Error (Enrollment):", error);
         notFound();
     }
 
@@ -42,7 +47,6 @@ export default async function PrintEnrollmentPage({ params }: { params: { id: st
     return (
         <div className="bg-white min-h-screen">
             <EnrollmentProof student={studentData} tenantName={tenant?.name} />
-            <script dangerouslySetInnerHTML={{ __html: `window.onload = () => { window.print(); }` }} />
         </div>
     );
 }

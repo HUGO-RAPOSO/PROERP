@@ -74,23 +74,33 @@ export default function DocumentLayout({
             {/* Print styles */}
             <style jsx global>{`
         @media print {
-          body {
-            background-color: white !important;
-            margin: 0;
-            padding: 0;
-          }
-          .no-print {
-            display: none !important;
-          }
           @page {
-            margin: 1.5cm;
+            margin: 1cm;
             size: A4;
           }
-          .shadow-lg {
+          body {
+            background: white !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .no-print, .print\:hidden {
+            display: none !important;
+          }
+          .shadow-lg, .shadow-xl {
             box-shadow: none !important;
           }
-          .font-serif {
-            font-family: Georgia, serif;
+          .border-gray-900 {
+            border-color: #000 !important;
+          }
+          .bg-gray-900 {
+            background-color: #000 !important;
+          }
+          .text-gray-900 {
+            color: #000 !important;
+          }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
         }
       `}</style>

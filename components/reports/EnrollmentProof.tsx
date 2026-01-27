@@ -16,12 +16,27 @@ interface EnrollmentProofProps {
 }
 
 export default function EnrollmentProof({ student, tenantName }: EnrollmentProofProps) {
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            window.print();
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
         <DocumentLayout
             title="Comprovativo de Matrícula"
             subtitle="Declaração de Vínculo Académico"
             tenantName={tenantName}
         >
+            <div className="flex justify-end mb-4 print:hidden">
+                <button
+                    onClick={() => window.print()}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg font-bold text-xs"
+                >
+                    Confirmar Impressão / PDF
+                </button>
+            </div>
             <div className="py-10 text-justify leading-relaxed">
                 <p className="mb-6">
                     Para os devidos efeitos e a pedido do interessado, certifica-se que o(a) estudante <b>{student.name}</b>,

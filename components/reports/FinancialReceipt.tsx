@@ -18,12 +18,27 @@ interface FinancialReceiptProps {
 }
 
 export default function FinancialReceipt({ transaction, tenantName }: FinancialReceiptProps) {
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            window.print();
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
         <DocumentLayout
             title="Recibo de Pagamento"
             subtitle={`Ref: ${transaction.reference || 'REC-' + Math.random().toString(36).substring(7).toUpperCase()}`}
             tenantName={tenantName}
         >
+            <div className="flex justify-end pt-4 px-6 print:hidden">
+                <button
+                    onClick={() => window.print()}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg font-bold text-xs"
+                >
+                    Confirmar Impressão / PDF
+                </button>
+            </div>
             <div className="py-12 px-6">
                 <div className="border-2 border-gray-900 rounded-3xl p-10 bg-white relative overflow-hidden">
                     {/* Decorative Corner */}
@@ -94,6 +109,6 @@ export default function FinancialReceipt({ transaction, tenantName }: FinancialR
                     </div>
                 </div>
             </div>
-        </DocumentLayout>
+        </DocumentLayout >
     );
 }

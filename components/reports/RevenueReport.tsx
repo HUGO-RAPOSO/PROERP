@@ -24,8 +24,63 @@ interface RevenueData {
 }
 
 export default function RevenueReport({ data }: { data: RevenueData }) {
+    const handlePrint = () => {
+        window.print();
+    };
+
     return (
         <div className="space-y-8">
+            <style jsx global>{`
+                @media print {
+                    /* Hide everything except the main content area */
+                    nav, 
+                    aside, 
+                    .no-print,
+                    .print-hidden,
+                    [role="navigation"] {
+                        display: none !important;
+                    }
+
+                    body {
+                        background: white !important;
+                    }
+
+                    main {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+
+                    .shadow-lg, .shadow-xl {
+                        box-shadow: none !important;
+                    }
+                    
+                    /* Ensure backgrounds like cards show up in PDF */
+                    * {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                }
+            `}</style>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
+                <div>
+                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Análise Institucional</h2>
+                    <p className="text-gray-500 text-sm">Visão consolidada do desempenho financeiro e académico.</p>
+                </div>
+
+                <div className="flex gap-3">
+                    <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-sm"
+                    >
+                        <Printer className="w-4 h-4" />
+                        Imprimir / Gerar PDF
+                    </button>
+                    <button className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-all shadow-lg shadow-gray-200">
+                        <Download className="w-4 h-4" />
+                        Exportar Dados (CSV)
+                    </button>
+                </div>
+            </div>
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <motion.div

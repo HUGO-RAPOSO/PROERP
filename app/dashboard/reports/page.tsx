@@ -75,26 +75,6 @@ export default async function ReportsPage() {
     };
 
     return (
-        <div className="space-y-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Análise Institucional</h2>
-                    <p className="text-gray-500 text-sm">Visão consolidada do desempenho financeiro e académico.</p>
-                </div>
-
-                <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-sm">
-                        <Download className="w-4 h-4" />
-                        Relatórios Académicos
-                    </button>
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-all shadow-lg shadow-gray-200">
-                        <Download className="w-4 h-4" />
-                        Exportar Anual (PDF)
-                    </button>
-                </div>
-            </div>
-
-            <RevenueReport data={reportData} />
-        </div>
+        <RevenueReport data={reportData} />
     );
 }
