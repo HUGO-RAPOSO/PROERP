@@ -71,7 +71,11 @@ export default async function ReportsPage() {
         totalExpenses: Number(totalExpenses),
         netProfit: Number(netProfit),
         incomesByCategory,
-        monthlyData
+        monthlyData,
+        transactions: (transactions || []).map(t => ({
+            ...t,
+            categoryName: (t.category as any)?.name || 'Geral'
+        }))
     };
 
     return (
