@@ -15,7 +15,11 @@ export default async function ReportsPage() {
 
     const { data: transactions } = await supabase
         .from('Transaction')
-        .select('*, category:Category(name)')
+        .select(`
+            *,
+            category:Category(name),
+            account:Account(name)
+        `)
         .eq('tenantId', tenantId);
 
     const totalIncomes = transactions?.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
@@ -74,7 +78,9 @@ export default async function ReportsPage() {
         monthlyData,
         transactions: (transactions || []).map(t => ({
             ...t,
-            categoryName: (t.category as any)?.name || 'Geral'
+            categoryName: (t.category as any)?.name || 'Geral',
+            accountName: (t.account as any)?.name || 'N/A',
+            status: t.status || 'CONCLUÍDO'
         }))
     };
 

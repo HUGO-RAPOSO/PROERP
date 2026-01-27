@@ -52,13 +52,16 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
 
     const handleExportCSV = () => {
         try {
-            const headers = ["Data", "Descrição", "Categoria", "Tipo", "Valor"];
-            const rows = filteredTransactions.map(t => [
+            const headers = ["Nr.", "Data", "Descrição", "Categoria", "Tipo", "Conta", "Valor", "Estado"];
+            const rows = filteredTransactions.map((t, idx) => [
+                idx + 1,
                 new Date(t.date).toLocaleDateString(),
                 t.description,
                 t.categoryName,
                 t.type === 'INCOME' ? 'Entrada' : 'Saída',
-                t.amount
+                t.accountName,
+                t.amount,
+                t.status
             ]);
 
             const csvContent = headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
@@ -407,62 +410,72 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse border border-gray-200">
                         <thead>
-                            <tr className="bg-gray-50/50 border-b border-gray-100">
-                                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Data</th>
-                                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Descrição</th>
-                                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Categoria</th>
-                                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Tipo</th>
-                                <th className="px-8 py-5 text-right text-[10px] font-black uppercase tracking-widest text-gray-400">Valor</th>
+                            <tr className="bg-gray-100 border-b border-gray-200">
+                                <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 border-r border-gray-200 w-12 text-center">Nr.</th>
+                                <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 border-r border-gray-200">Data</th>
+                                <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 border-r border-gray-200">Descrição</th>
+                                <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 border-r border-gray-200">Categoria</th>
+                                <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 border-r border-gray-200">Conta</th>
+                                <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 border-r border-gray-200 text-center">Tipo</th>
+                                <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-gray-500 border-r border-gray-200">Valor</th>
+                                <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-gray-500">Estado</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50">
+                        <tbody className="divide-y divide-gray-200">
                             {filteredTransactions.length > 0 ? (
                                 filteredTransactions.map((t, idx) => (
                                     <motion.tr
                                         key={t.id}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: idx * 0.05 }}
-                                        className="hover:bg-gray-50/80 transition-colors group"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: idx * 0.02 }}
+                                        className="hover:bg-blue-50/50 transition-colors odd:bg-white even:bg-gray-50/30"
                                     >
-                                        <td className="px-8 py-5 text-sm font-medium text-gray-500">
+                                        <td className="px-4 py-3 text-xs font-bold text-gray-400 text-center border-r border-gray-100">
+                                            {idx + 1}
+                                        </td>
+                                        <td className="px-4 py-3 text-xs font-medium text-gray-600 border-r border-gray-100 whitespace-nowrap">
                                             {new Date(t.date).toLocaleDateString()}
                                         </td>
-                                        <td className="px-8 py-5">
-                                            <p className="text-sm font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
+                                        <td className="px-4 py-3 border-r border-gray-100">
+                                            <p className="text-xs font-bold text-gray-800 truncate max-w-[200px]" title={t.description}>
                                                 {t.description}
                                             </p>
                                         </td>
-                                        <td className="px-8 py-5">
-                                            <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-[10px] font-bold uppercase tracking-tighter">
+                                        <td className="px-4 py-3 border-r border-gray-100 whitespace-nowrap">
+                                            <span className="text-[10px] font-bold uppercase tracking-tight text-gray-500">
                                                 {t.categoryName}
                                             </span>
                                         </td>
-                                        <td className="px-8 py-5">
+                                        <td className="px-4 py-3 border-r border-gray-100 whitespace-nowrap">
+                                            <span className="text-[10px] font-bold text-gray-500">
+                                                {t.accountName}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-center border-r border-gray-100">
                                             {t.type === 'INCOME' ? (
-                                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-xl text-[10px] font-black uppercase tracking-tighter ring-1 ring-green-200">
-                                                    <ArrowUpCircle className="w-3 h-3" />
-                                                    Entrada
-                                                </div>
+                                                <span className="text-[10px] font-black text-green-600 uppercase">Entrada</span>
                                             ) : (
-                                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 rounded-xl text-[10px] font-black uppercase tracking-tighter ring-1 ring-red-200">
-                                                    <ArrowDownCircle className="w-3 h-3" />
-                                                    Saída
-                                                </div>
+                                                <span className="text-[10px] font-black text-red-600 uppercase">Saída</span>
                                             )}
                                         </td>
-                                        <td className="px-8 py-5 text-right font-mono font-bold text-sm">
-                                            <span className={t.type === 'INCOME' ? 'text-green-600' : 'text-red-600'}>
+                                        <td className="px-4 py-3 text-right font-mono font-bold text-xs border-r border-gray-100 whitespace-nowrap">
+                                            <span className={t.type === 'INCOME' ? 'text-green-700' : 'text-red-700'}>
                                                 {t.type === 'INCOME' ? '+' : '-'} {formatCurrency(t.amount)}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-center whitespace-nowrap">
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600">
+                                                {t.status}
                                             </span>
                                         </td>
                                     </motion.tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="px-8 py-20 text-center">
+                                    <td colSpan={8} className="px-8 py-20 text-center border-t border-gray-200">
                                         <div className="flex flex-col items-center gap-3 text-gray-400">
                                             <Search className="w-8 h-8 opacity-20" />
                                             <p className="text-sm font-medium">Nenhuma transação encontrada com os filtros aplicados.</p>
