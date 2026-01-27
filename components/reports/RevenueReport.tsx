@@ -51,51 +51,91 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     const handleExportCSV = () => {
-        const headers = ["Data", "Descrição", "Categoria", "Tipo", "Valor"];
-        const rows = filteredTransactions.map(t => [
-            new Date(t.date).toLocaleDateString(),
-            t.description,
-            t.categoryName,
-            t.type === 'INCOME' ? 'Entrada' : 'Saída',
-            t.amount
-        ]);
+        try {
+            const headers = ["Data", "Descrição", "Categoria", "Tipo", "Valor"];
+            const rows = filteredTransactions.map(t => [
+                new Date(t.date).toLocaleDateString(),
+                t.description,
+                t.categoryName,
+                t.type === 'INCOME' ? 'Entrada' : 'Saída',
+                t.amount
+            ]);
 
-        const csvContent = "data:text/csv;charset=utf-8,"
-            + headers.join(",") + "\n"
-            + rows.map(e => e.join(",")).join("\n");
+            const csvContent = headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `relatorio_financeiro_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+            // Add BOM for Excel UTF-8 recognition
+            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `relatorio_financeiro_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Export failed:", error);
+            alert("Erro ao exportar ficheiro. Por favor tente novamente.");
+        }
     };
 
     return (
         <div className="space-y-8">
             <style jsx global>{`
                 @media print {
-                    nav, aside, header, .no-print, .print-hidden, [role="navigation"] {
+                    @page {
+                        size: landscape;
+                        margin: 10mm;
+                    }
+
+                    /* Hide UI elements more aggressively */
+                    nav, 
+                    aside, 
+                    header, 
+                    footer,
+                    .no-print, 
+                    .print-hidden, 
+                    [role="navigation"],
+                    [role="banner"],
+                    button {
                         display: none !important;
                     }
-                    div.pl-64 {
+
+                    /* Reset the main content layout and padding */
+                    div.pl-64,
+                    .pl-64,
+                    .ml-64 {
                         padding-left: 0 !important;
+                        margin-left: 0 !important;
                     }
+
                     main {
                         padding: 0 !important;
                         margin: 0 !important;
+                        width: 100% !important;
+                        max-width: none !important;
                     }
+
                     body {
                         background: white !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
                     }
+
                     .shadow-lg, .shadow-xl, .shadow-2xl {
                         box-shadow: none !important;
                     }
+
                     * {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
+                    }
+
+                    /* Ensure charts and table fill width in landscape */
+                    .grid {
+                        width: 100% !important;
                     }
                 }
             `}</style>
