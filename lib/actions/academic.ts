@@ -674,7 +674,7 @@ export async function getStudentFullProfile(studentId: string) {
 
 export async function getClassGradesForReport(classId: string) {
     // 1. Fetch Class and Subject details
-    const { data: cls, error: classError } = await supabase
+    const { data: cls, error: classError } = await supabaseAdmin
         .from('Class')
         .select(`
             name,
@@ -699,7 +699,7 @@ export async function getClassGradesForReport(classId: string) {
     }
 
     // 2. Fetch Enrollments explicitly LINKED to this class (and thus subject)
-    const { data: enrollments, error } = await supabase
+    const { data: enrollments, error } = await supabaseAdmin
         .from('Enrollment')
         .select(`
             id,
