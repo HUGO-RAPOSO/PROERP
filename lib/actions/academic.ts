@@ -679,14 +679,17 @@ export async function getClassGradesForReport(classId: string) {
         return { error: "Erro de Configuração: Chave de Administração (Service Role) não encontrada no servidor." };
     }
 
+    console.log(`[getClassGradesForReport] Received Raw Class ID: '${classId}'`);
+    const cleanClassId = classId?.trim();
+
     // Validate UUID format to prevent DB errors
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!classId || !uuidRegex.test(classId)) {
-        console.error(`Invalid Class ID format: ${classId}`);
-        return { error: "ID da Turma inválido ou malformado." };
+    if (!cleanClassId || !uuidRegex.test(cleanClassId)) {
+        console.error(`Invalid Class ID format: '${cleanClassId}'`);
+        return { error: `ID da Turma inválido ou malformado: '${cleanClassId}' (Verifique o link)` };
     }
 
-    console.log(`Fetching report data for class: ${classId}`);
+    console.log(`Fetching report data for class: ${cleanClassId}`);
 
     const { data: cls, error: classError } = await supabaseAdmin
         .from('Class')
@@ -713,7 +716,7 @@ export async function getClassGradesForReport(classId: string) {
     }
 
     if (!cls) {
-        console.error(`Class not found with ID: ${classId}`);
+        console.error(`Class not found with ID: ${cleanClassId}`);
         return { error: "Turma não encontrada com o ID fornecido." };
     }
 
@@ -727,7 +730,7 @@ export async function getClassGradesForReport(classId: string) {
             grades:Grade (*),
             status 
         `)
-        .eq('classId', classId) // CRITICAL: Filter by ClassId, not SubjectId
+        .eq('classId', cleanClassId) // CRITICAL: Filter by ClassId, not SubjectId
         .order('student(name)', { ascending: true }); // Sort by Student Name
 
     if (error) {
