@@ -25,7 +25,8 @@ export function calculateStudentStatus(
         exclusionGrade?: number;
     }
 ): StudentStatusResult {
-    const getG = (type: string) => grades.find((g) => g.type === type)?.value;
+    const safeGrades = grades || [];
+    const getG = (type: string) => safeGrades.find((g) => g.type === type)?.value;
     const p1 = getG("P1")?.toString() ?? "";
     const p2 = getG("P2")?.toString() ?? "";
     const t1 = getG("T1")?.toString() ?? "";

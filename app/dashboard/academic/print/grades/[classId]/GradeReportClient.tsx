@@ -85,8 +85,8 @@ export default function GradeReportClient({ classDetails, enrollments, subject }
                     </tr>
                 </thead>
                 <tbody>
-                    {enrollments.map((enrollment: any, idx: number) => {
-                        const stats = calculateStudentStatus(enrollment.grades, {
+                    {(enrollments || []).map((enrollment: any, idx: number) => {
+                        const stats = calculateStudentStatus(enrollment.grades || [], {
                             examWaiverPossible: subject?.examWaiverPossible,
                             waiverGrade: subject?.waiverGrade,
                             exclusionGrade: subject?.exclusionGrade

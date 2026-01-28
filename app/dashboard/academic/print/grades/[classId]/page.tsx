@@ -26,10 +26,14 @@ export default async function GradeReportPage(props: { params: Promise<{ classId
     // Defensive check
     if (!data || !(data as any).classDetails) {
         console.error("Data missing classDetails:", data);
-        return <div className="p-8 text-red-600">Erro: Dados da turma incompletos.</div>;
+        return <div className="p-8 text-red-600">Erro: Dados da turma incompletos ou corrompidos. Tente recarregar.</div>;
     }
 
-    const { classDetails, enrollments } = data as any;
+    // SANITIZATION: Force JSON serialization to remove Date objects or complex types
+    // This fixes "Server Components render" errors with Next.js 15+ strict boundary
+    const safeData = JSON.parse(JSON.stringify(data));
+
+    const { classDetails, enrollments } = safeData;
     const subject = classDetails?.subject;
 
     return (
