@@ -12,7 +12,8 @@ interface GradeReportClientProps {
 export default function GradeReportClient({ classDetails, enrollments, subject }: GradeReportClientProps) {
     return (
         <div className="min-h-screen bg-white p-8 space-y-8" id="grade-report-container">
-            <style jsx global>{`
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 @media print {
                     @page {
                         size: landscape;
@@ -35,7 +36,7 @@ export default function GradeReportClient({ classDetails, enrollments, subject }
                     /* Header Styles */
                     .print-header { border-bottom: 2px solid #000; margin-bottom: 15px; padding-bottom: 10px; }
                 }
-            `}</style>
+            `}} />
 
             {/* Print Header */}
             <div className="flex justify-between items-end border-b-2 border-black pb-4 print-header">
