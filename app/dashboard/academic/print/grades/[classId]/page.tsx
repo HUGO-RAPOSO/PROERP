@@ -23,6 +23,12 @@ export default async function GradeReportPage(props: { params: Promise<{ classId
         );
     }
 
+    // Defensive check
+    if (!data || !(data as any).classDetails) {
+        console.error("Data missing classDetails:", data);
+        return <div className="p-8 text-red-600">Erro: Dados da turma incompletos.</div>;
+    }
+
     const { classDetails, enrollments } = data as any;
     const subject = classDetails?.subject;
 
