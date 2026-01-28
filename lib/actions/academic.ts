@@ -675,9 +675,11 @@ export async function getStudentFullProfile(studentId: string) {
 export async function getClassGradesForReport(classId: string) {
     // 1. Fetch Class and Subject details
     if (!supabaseAdmin) {
-        console.error("Supabase Admin not initialized");
-        return null; // Or throw error
+        console.error("CRITICAL: Supabase Admin client is NOT initialized. Check SUPABASE_SERVICE_ROLE_KEY env var.");
+        return null;
     }
+
+    console.log(`Fetching report data for class: ${classId}`);
 
     const { data: cls, error: classError } = await supabaseAdmin
         .from('Class')
@@ -698,8 +700,13 @@ export async function getClassGradesForReport(classId: string) {
         .eq('id', classId)
         .single();
 
-    if (classError || !cls) {
+    if (classError) {
         console.error("Error fetching class for report:", classError);
+        return null;
+    }
+
+    if (!cls) {
+        console.error(`Class not found with ID: ${classId}`);
         return null;
     }
 
