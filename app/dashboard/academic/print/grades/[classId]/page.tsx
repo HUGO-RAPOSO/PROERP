@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { getClassGradesForReport } from "@/lib/actions/academic";
 import GradeReportClient from "./GradeReportClient";
 
-export default async function GradeReportPage({ params }: { params: { classId: string } }) {
+export default async function GradeReportPage(props: { params: Promise<{ classId: string }> }) {
+    const params = await props.params;
     const session = await auth();
     if (!session || !session.user) redirect('/auth/login');
 
