@@ -674,6 +674,11 @@ export async function getStudentFullProfile(studentId: string) {
 
 export async function getClassGradesForReport(classId: string) {
     // 1. Fetch Class and Subject details
+    if (!supabaseAdmin) {
+        console.error("Supabase Admin not initialized");
+        return null; // Or throw error
+    }
+
     const { data: cls, error: classError } = await supabaseAdmin
         .from('Class')
         .select(`
