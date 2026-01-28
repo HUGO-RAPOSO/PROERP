@@ -679,6 +679,13 @@ export async function getClassGradesForReport(classId: string) {
         return { error: "Erro de Configuração: Chave de Administração (Service Role) não encontrada no servidor." };
     }
 
+    // Validate UUID format to prevent DB errors
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!classId || !uuidRegex.test(classId)) {
+        console.error(`Invalid Class ID format: ${classId}`);
+        return { error: "ID da Turma inválido ou malformado." };
+    }
+
     console.log(`Fetching report data for class: ${classId}`);
 
     const { data: cls, error: classError } = await supabaseAdmin
