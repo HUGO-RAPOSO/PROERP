@@ -22,8 +22,8 @@ export default async function GradeReportPage({ params }: { params: { classId: s
         );
     }
 
-    const { classDetails, enrollments } = data;
-    const subject = classDetails.subject;
+    const { classDetails, enrollments } = data as any;
+    const subject = classDetails?.subject;
 
     return (
         <GradeReportClient
