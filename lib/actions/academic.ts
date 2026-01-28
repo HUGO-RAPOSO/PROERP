@@ -675,8 +675,8 @@ export async function getStudentFullProfile(studentId: string) {
 export async function getClassGradesForReport(classId: string) {
     // 1. Fetch Class and Subject details
     if (!supabaseAdmin) {
-        console.error("CRITICAL: Supabase Admin client is NOT initialized. Check SUPABASE_SERVICE_ROLE_KEY env var.");
-        return null;
+        console.error("CRITICAL: Supabase Admin client is NOT initialized.");
+        return { error: "Erro de Configuração: Chave de Administração (Service Role) não encontrada no servidor." };
     }
 
     console.log(`Fetching report data for class: ${classId}`);
@@ -702,12 +702,12 @@ export async function getClassGradesForReport(classId: string) {
 
     if (classError) {
         console.error("Error fetching class for report:", classError);
-        return null;
+        return { error: `Erro no Banco de Dados: ${classError.message}` };
     }
 
     if (!cls) {
         console.error(`Class not found with ID: ${classId}`);
-        return null;
+        return { error: "Turma não encontrada com o ID fornecido." };
     }
 
     // 2. Fetch Enrollments explicitly LINKED to this class (and thus subject)
