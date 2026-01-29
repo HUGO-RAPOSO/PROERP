@@ -36,23 +36,7 @@ export default async function GradeReportPage(props: { params: Promise<{ classId
         const { classDetails, enrollments } = safeData;
         const subject = classDetails?.subject;
 
-        // DEBUG: Render raw data to check if fetching works without crashing
-        return (
-            <div className="p-8 font-mono text-xs overflow-auto h-screen">
-                <h1 className="text-2xl font-bold mb-4">Debug Mode: Data Preview</h1>
-                <div className="bg-gray-100 p-4 rounded">
-                    <p className="mb-2"><strong>Class ID:</strong> {params.classId}</p>
-                    <p className="mb-2"><strong>Class Name:</strong> {classDetails?.name}</p>
-                    <p className="mb-2"><strong>Subject:</strong> {subject?.name}</p>
-                    <p className="mb-2"><strong>Enrollments Count:</strong> {enrollments?.length || 0}</p>
-                </div>
-                <pre className="mt-4 bg-white p-4 rounded overflow-auto">{JSON.stringify(safeData, (key, value) =>
-                    typeof value === 'bigint' ? value.toString() : value
-                    , 2)}</pre>
-            </div>
-        );
-
-        /*
+        // Data is loading correctly, render the actual report
         return (
             <GradeReportClient
                 classDetails={classDetails}
@@ -60,7 +44,6 @@ export default async function GradeReportPage(props: { params: Promise<{ classId
                 subject={subject}
             />
         );
-        */
     } catch (error: any) {
         console.error("CRITICAL ERROR in GradeReportPage:", error);
         return (
