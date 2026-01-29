@@ -36,6 +36,17 @@ export default async function GradeReportPage(props: { params: Promise<{ classId
     const { classDetails, enrollments } = safeData;
     const subject = classDetails?.subject;
 
+    // DEBUG: Render raw data to check if fetching works without crashing
+    return (
+        <div className="p-8 font-mono text-xs overflow-auto h-screen">
+            <h1>Debug Mode: Data Preview</h1>
+            <pre>{JSON.stringify(safeData, (key, value) =>
+                typeof value === 'bigint' ? value.toString() : value
+                , 2)}</pre>
+        </div>
+    );
+
+    /*
     return (
         <GradeReportClient
             classDetails={classDetails}
@@ -43,4 +54,5 @@ export default async function GradeReportPage(props: { params: Promise<{ classId
             subject={subject}
         />
     );
+    */
 }
