@@ -696,6 +696,7 @@ export async function getClassGradesForReport(classId: string) {
         .select(`
             name,
             schedule,
+            subjectId,
             subject:Subject (
                 name,
                 year,
