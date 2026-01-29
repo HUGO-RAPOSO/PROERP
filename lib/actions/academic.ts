@@ -730,7 +730,7 @@ export async function getClassGradesForReport(classId: string) {
             grades:Grade (*),
             status 
         `)
-        .eq('classId', cleanClassId) // CRITICAL: Filter by ClassId, not SubjectId
+        .eq('subjectId', cls.subjectId) // Use subjectId from the Class record
         .order('student(name)', { ascending: true }); // Sort by Student Name
 
     if (error) {
