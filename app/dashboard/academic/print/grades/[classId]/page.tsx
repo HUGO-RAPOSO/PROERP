@@ -5,54 +5,73 @@ import { getClassGradesForReport } from "@/lib/actions/academic";
 import GradeReportClient from "./GradeReportClient";
 
 export default async function GradeReportPage(props: { params: Promise<{ classId: string }> }) {
-    const params = await props.params;
-    const session = await auth();
-    if (!session || !session.user) redirect('/auth/login');
+    try {
+        const params = await props.params;
+        const session = await auth();
+        if (!session || !session.user) redirect('/auth/login');
 
-    const data = await getClassGradesForReport(params.classId);
+        const data = await getClassGradesForReport(params.classId);
 
-    if (!data || (data as any).error) {
+        if (!data || (data as any).error) {
+            return (
+                <div className="p-8 text-center bg-red-50 h-screen flex flex-col items-center justify-center">
+                    <h1 className="text-2xl font-bold text-red-600 mb-2">Erro ao Gerar Pauta</h1>
+                    <p className="text-gray-700 font-medium">{(data as any)?.error || "Erro desconhecido ao buscar dados."}</p>
+                    <p className="text-sm text-gray-500 mt-4 max-w-md">
+                        Se o erro for de configuração, verifique as variáveis de ambiente no painel da Vercel.
+                    </p>
+                </div>
+            );
+        }
+
+        // Defensive check
+        if (!data || !(data as any).classDetails) {
+            console.error("Data missing classDetails:", data);
+            return <div className="p-8 text-red-600">Erro: Dados da turma incompletos ou corrompidos. Tente recarregar.</div>;
+        }
+
+        // SANITIZATION: Force JSON serialization to remove Date objects or complex types
+        const safeData = JSON.parse(JSON.stringify(data));
+
+        const { classDetails, enrollments } = safeData;
+        const subject = classDetails?.subject;
+
+        // DEBUG: Render raw data to check if fetching works without crashing
         return (
-            <div className="p-8 text-center bg-red-50 h-screen flex flex-col items-center justify-center">
-                <h1 className="text-2xl font-bold text-red-600 mb-2">Erro ao Gerar Pauta</h1>
-                <p className="text-gray-700 font-medium">{(data as any)?.error || "Erro desconhecido ao buscar dados."}</p>
-                <p className="text-sm text-gray-500 mt-4 max-w-md">
-                    Se o erro for de configuração, verifique as variáveis de ambiente no painel da Vercel.
-                </p>
+            <div className="p-8 font-mono text-xs overflow-auto h-screen">
+                <h1 className="text-2xl font-bold mb-4">Debug Mode: Data Preview</h1>
+                <div className="bg-gray-100 p-4 rounded">
+                    <p className="mb-2"><strong>Class ID:</strong> {params.classId}</p>
+                    <p className="mb-2"><strong>Class Name:</strong> {classDetails?.name}</p>
+                    <p className="mb-2"><strong>Subject:</strong> {subject?.name}</p>
+                    <p className="mb-2"><strong>Enrollments Count:</strong> {enrollments?.length || 0}</p>
+                </div>
+                <pre className="mt-4 bg-white p-4 rounded overflow-auto">{JSON.stringify(safeData, (key, value) =>
+                    typeof value === 'bigint' ? value.toString() : value
+                    , 2)}</pre>
+            </div>
+        );
+
+        /*
+        return (
+            <GradeReportClient
+                classDetails={classDetails}
+                enrollments={enrollments}
+                subject={subject}
+            />
+        );
+        */
+    } catch (error: any) {
+        console.error("CRITICAL ERROR in GradeReportPage:", error);
+        return (
+            <div className="p-8 bg-red-100 h-screen flex flex-col items-center justify-center">
+                <h1 className="text-3xl font-bold text-red-700 mb-4">Erro Crítico no Servidor</h1>
+                <p className="text-lg text-gray-800 mb-2"><strong>Mensagem:</strong> {error?.message || "Erro desconhecido"}</p>
+                <p className="text-sm text-gray-600 mb-4"><strong>Tipo:</strong> {error?.name || "Error"}</p>
+                <pre className="bg-white p-4 rounded text-xs overflow-auto max-w-4xl w-full">
+                    {error?.stack || JSON.stringify(error, null, 2)}
+                </pre>
             </div>
         );
     }
-
-    // Defensive check
-    if (!data || !(data as any).classDetails) {
-        console.error("Data missing classDetails:", data);
-        return <div className="p-8 text-red-600">Erro: Dados da turma incompletos ou corrompidos. Tente recarregar.</div>;
-    }
-
-    // SANITIZATION: Force JSON serialization to remove Date objects or complex types
-    // This fixes "Server Components render" errors with Next.js 15+ strict boundary
-    const safeData = JSON.parse(JSON.stringify(data));
-
-    const { classDetails, enrollments } = safeData;
-    const subject = classDetails?.subject;
-
-    // DEBUG: Render raw data to check if fetching works without crashing
-    return (
-        <div className="p-8 font-mono text-xs overflow-auto h-screen">
-            <h1>Debug Mode: Data Preview</h1>
-            <pre>{JSON.stringify(safeData, (key, value) =>
-                typeof value === 'bigint' ? value.toString() : value
-                , 2)}</pre>
-        </div>
-    );
-
-    /*
-    return (
-        <GradeReportClient
-            classDetails={classDetails}
-            enrollments={enrollments}
-            subject={subject}
-        />
-    );
-    */
 }
