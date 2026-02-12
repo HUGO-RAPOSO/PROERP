@@ -531,8 +531,10 @@ export async function deleteClass(id: string) {
 
 export async function getCourseDashboardData(courseId: string) {
     try {
+        const client = supabaseAdmin || supabase;
+
         // 1. Fetch Course & Subjects
-        const { data: course, error: courseError } = await supabase
+        const { data: course, error: courseError } = await client
             .from('Course')
             .select(`
                 *,
@@ -544,7 +546,7 @@ export async function getCourseDashboardData(courseId: string) {
         if (courseError) throw courseError;
 
         // 2. Fetch Students in this course
-        const { data: students, error: studentError } = await supabase
+        const { data: students, error: studentError } = await client
             .from('Student')
             .select(`
                 *,
@@ -557,14 +559,15 @@ export async function getCourseDashboardData(courseId: string) {
         if (studentError) throw studentError;
 
         // 3. Fetch Turmas (Classes) for this course
-        const { data: turmas, error: turmasError } = await supabase
+        const { data: turmas, error: turmasError } = await client
             .from('Class')
             .select(`
                 *,
                 lessons:Lesson (
                     *,
                     subject:Subject (*),
-                    teacher:Teacher (name)
+                    teacher:Teacher (name),
+                    room:Room(name)
                 ),
                 _count: {
                     students:Student (id)
@@ -578,7 +581,7 @@ export async function getCourseDashboardData(courseId: string) {
             success: true,
             course,
             students: students || [],
-            turmas: turmas || []
+            classes: turmas || [] // frontend expects 'classes'
         };
     } catch (error: any) {
         console.error("Error fetching course dashboard data:", error);

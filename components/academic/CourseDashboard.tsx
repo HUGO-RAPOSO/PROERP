@@ -220,7 +220,7 @@ export default function CourseDashboard({ courseId, onClose }: CourseDashboardPr
 
                                         <div className="flex items-center gap-2 pt-4 border-t border-gray-50">
                                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Local: {cls.room || "Não def."}</span>
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Local: {cls.room?.name || "Não def."}</span>
                                         </div>
                                     </div>
                                 );
