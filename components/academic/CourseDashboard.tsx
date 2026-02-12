@@ -25,15 +25,26 @@ export default function CourseDashboard({ courseId, onClose }: CourseDashboardPr
     const [activeTab, setActiveTab] = useState<"CURRICULUM" | "STUDENTS" | "SCHEDULE">("CURRICULUM");
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         async function load() {
             setLoading(true);
-            const res = await getCourseDashboardData(courseId);
-            if (res.success) {
-                setData(res);
+            setError(null);
+            try {
+                const res = await getCourseDashboardData(courseId);
+                if (res.success) {
+                    setData(res);
+                } else {
+                    setError(res.error || "Erro desconhecido ao carregar dados.");
+                    console.error("CourseDashboard error:", res.error);
+                }
+            } catch (err: any) {
+                setError(err.message || "Erro inesperado ao carregar dados.");
+                console.error("CourseDashboard catch error:", err);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         }
         load();
     }, [courseId]);
@@ -47,7 +58,22 @@ export default function CourseDashboard({ courseId, onClose }: CourseDashboardPr
         );
     }
 
-    if (!data) return <div className="p-8 text-center text-red-500">Erro ao carregar dados.</div>;
+    if (error || !data) {
+        return (
+            <div className="p-8 text-center space-y-4">
+                <div className="bg-red-50 text-red-700 p-6 rounded-2xl border border-red-100 inline-block max-w-md">
+                    <p className="font-bold mb-2">Erro ao carregar dados</p>
+                    <p className="text-sm opacity-90">{error || "Não foi possível carregar as informações do curso."}</p>
+                </div>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="block mx-auto text-sm font-bold text-primary-600 hover:text-primary-700"
+                >
+                    Tentar Novamente
+                </button>
+            </div>
+        );
+    }
 
     const { course, students, classes } = data;
 
