@@ -3,9 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { createEmployee, updateEmployee } from "@/lib/actions/hr";
+import { createEmployee, updateEmployee, addEmployeeDocument } from "@/lib/actions/hr";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { uploadFileAdmin } from "@/lib/actions/storage-actions";
 
 const employeeSchema = z.object({
     name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
@@ -45,18 +46,47 @@ export default function EmployeeForm({ tenantId, onSuccess, initialData, roles =
     async function onSubmit(values: EmployeeFormValues) {
         setLoading(true);
         try {
+            let employeeId = initialData?.id;
+            let result;
+
             if (initialData) {
-                await updateEmployee(initialData.id, values);
+                result = await updateEmployee(initialData.id, values);
+                if (!result.success) throw new Error(result.error);
             } else {
-                await createEmployee({
+                result = await createEmployee({
                     ...values,
                     tenantId,
                 });
+                if (!result.success) throw new Error(result.error);
+                employeeId = result.data.id;
             }
+
+            // Handle Document Upload
+            if (document && employeeId) {
+                const formData = new FormData();
+                formData.append('file', document);
+                const path = `employees/${tenantId}/${employeeId}/${Date.now()}_${document.name}`;
+
+                const uploadRes = await uploadFileAdmin(formData, path);
+
+                if (uploadRes.success) {
+                    await addEmployeeDocument({
+                        name: document.name,
+                        url: uploadRes.path || "",
+                        employeeId: employeeId
+                    });
+                } else {
+                    console.error("Erro ao fazer upload do documento:", uploadRes.error);
+                    alert("Colaborador salvo, mas houve um erro no upload do documento.");
+                }
+            }
+
             onSuccess();
             form.reset();
-        } catch (error) {
+            setDocument(null);
+        } catch (error: any) {
             console.error(error);
+            alert(error.message || "Erro ao salvar colaborador");
         } finally {
             setLoading(false);
         }

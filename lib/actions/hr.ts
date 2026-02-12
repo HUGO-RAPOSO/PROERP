@@ -1,6 +1,7 @@
 "use server";
 
 import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 
@@ -193,7 +194,8 @@ export async function addEmployeeDocument(data: {
     employeeId: string;
 }) {
     try {
-        const { data: doc, error } = await supabase
+        const client = supabaseAdmin || supabase;
+        const { data: doc, error } = await client
             .from('EmployeeDocument')
             .insert(data)
             .select()

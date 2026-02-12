@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addEmployeeDocument } from "@/lib/actions/hr";
-import { uploadFile, getPublicUrl } from "@/lib/storage";
+import { uploadFileAdmin } from "@/lib/actions/storage-actions";
 import { Loader2, Upload, X } from "lucide-react";
 
 const documentSchema = z.object({
@@ -37,20 +37,24 @@ export default function DocumentUploadForm({ employeeId, onSuccess }: DocumentUp
         setLoading(true);
 
         try {
-            // 1. Upload to Supabase Storage
-            const timestamp = Date.now();
-            const fileExt = file.name.split('.').pop();
-            const fileName = `employee-docs/${employeeId}/${timestamp}.${fileExt}`;
+            // 1. Upload to Supabase Storage using server action
+            const formData = new FormData();
+            formData.append('file', file);
+            const path = `employee-docs/${employeeId}/${Date.now()}_${file.name}`;
 
-            const uploadResult = await uploadFile(file, fileName);
+            const uploadResult = await uploadFileAdmin(formData, path);
 
             if (!uploadResult.success) {
                 throw new Error("Erro ao fazer upload do arquivo: " + uploadResult.error);
             }
 
-            const publicUrl = getPublicUrl(uploadResult.path!);
-
             // 2. Save metadata to Database
+            // The path returned by uploadFileAdmin is already the relative path in the bucket
+            // We can construct a public URL if needed, or just store the path
+            // Looking at previous patterns, we might need a public URL
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const publicUrl = `${supabaseUrl}/storage/v1/object/public/documents/${uploadResult.path}`;
+
             const result = await addEmployeeDocument({
                 employeeId,
                 name: values.name,
