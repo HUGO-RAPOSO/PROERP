@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import StudentList from "@/components/academic/StudentList";
 import ClassGrid from "@/components/academic/ClassGrid";
 import AcademicManager from "./AcademicManager";
@@ -13,6 +14,7 @@ export default async function AcademicPage() {
     }
 
     const tenantId = session.user.tenantId;
+    const client = supabaseAdmin || supabase;
 
     // Fetch all academic data in parallel to eliminate waterfalls
     const [
@@ -24,8 +26,8 @@ export default async function AcademicPage() {
         { data: accounts },
         { data: rooms }
     ] = await Promise.all([
-        supabase.from('Student').select('*, course:Course (*), enrollments:Enrollment (*, subject:Subject (*, course:Course (name))), turma:Class(name)').eq('tenantId', tenantId).order('name', { ascending: true }),
-        supabase.from('Class').select(`
+        client.from('Student').select('*, course:Course (*), enrollments:Enrollment (*, subject:Subject (*, course:Course (name))), turma:Class(name)').eq('tenantId', tenantId).order('name', { ascending: true }),
+        client.from('Class').select(`
             *,
             lessons:Lesson (
                 *,
@@ -35,11 +37,11 @@ export default async function AcademicPage() {
             ),
             students:Student (count)
         `).eq('tenantId', tenantId),
-        supabase.from('Course').select('*, subjects:Subject (*)').or(`tenantId.eq.${tenantId},tenantId.is.null`).order('name', { ascending: true }),
-        supabase.from('Teacher').select('*').eq('tenantId', tenantId),
-        supabase.from('Subject').select('*, course:Course(name)').or(`tenantId.eq.${tenantId},tenantId.is.null`),
-        supabase.from('Account').select('*').eq('tenantId', tenantId),
-        supabase.from('Room').select('*').eq('tenantId', tenantId).order('name', { ascending: true })
+        client.from('Course').select('*, subjects:Subject (*)').or(`tenantId.eq.${tenantId},tenantId.is.null`).order('name', { ascending: true }),
+        client.from('Teacher').select('*').eq('tenantId', tenantId),
+        client.from('Subject').select('*, course:Course(name)').or(`tenantId.eq.${tenantId},tenantId.is.null`),
+        client.from('Account').select('*').eq('tenantId', tenantId),
+        client.from('Room').select('*').eq('tenantId', tenantId).order('name', { ascending: true })
     ]);
 
     // Format classes to match the expected structure
