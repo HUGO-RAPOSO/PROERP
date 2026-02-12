@@ -15,6 +15,7 @@ const studentSchema = z.object({
     email: z.string().email("E-mail inválido").optional().or(z.literal("")),
     phone: z.string().optional(),
     courseId: z.string().min(1, "O curso é obrigatório"),
+    classId: z.string().optional().or(z.literal("")),
     enrollmentSlipNumber: z.string().optional(),
     accountId: z.string().optional(),
     paymentDate: z.string().optional(),
@@ -28,9 +29,10 @@ interface StudentModalProps {
     initialData?: StudentFormValues & { id: string };
     courses: { id: string; name: string }[];
     accounts: { id: string; name: string }[];
+    turmas: { id: string; name: string; courseId: string }[];
 }
 
-export default function StudentForm({ tenantId, onSuccess, initialData, courses, accounts }: StudentModalProps) {
+export default function StudentForm({ tenantId, onSuccess, initialData, courses, accounts, turmas }: StudentModalProps) {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [extraDocs, setExtraDocs] = useState<{ type: string, file: File | null }[]>([
@@ -45,9 +47,13 @@ export default function StudentForm({ tenantId, onSuccess, initialData, courses,
             email: "",
             phone: "",
             courseId: "",
+            classId: "",
             enrollmentSlipNumber: "",
         },
     });
+
+    const selectedCourseId = form.watch("courseId");
+    const availableTurmas = turmas.filter(t => t.courseId === selectedCourseId);
 
     async function onSubmit(values: StudentFormValues) {
         setLoading(true);
@@ -233,22 +239,44 @@ export default function StudentForm({ tenantId, onSuccess, initialData, courses,
                             exit={{ opacity: 0, x: -20 }}
                             className="space-y-6"
                         >
-                            <div className="space-y-2">
-                                <label className="text-sm font-black text-gray-700 uppercase tracking-wider">Curso de Ingresso</label>
-                                <select
-                                    {...form.register("courseId")}
-                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all appearance-none text-gray-900 font-bold"
-                                >
-                                    <option value="">Selecione o curso...</option>
-                                    {courses.map((course) => (
-                                        <option key={course.id} value={course.id}>
-                                            {course.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {form.formState.errors.courseId && (
-                                    <p className="text-xs text-red-500 font-bold mt-1">{form.formState.errors.courseId.message}</p>
-                                )}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-black text-gray-700 uppercase tracking-wider">Curso de Ingresso</label>
+                                    <select
+                                        {...form.register("courseId")}
+                                        className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all appearance-none text-gray-900 font-bold"
+                                        onChange={(e) => {
+                                            form.setValue("courseId", e.target.value);
+                                            form.setValue("classId", ""); // Reset class when course changes
+                                        }}
+                                    >
+                                        <option value="">Selecione o curso...</option>
+                                        {courses.map((course) => (
+                                            <option key={course.id} value={course.id}>
+                                                {course.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {form.formState.errors.courseId && (
+                                        <p className="text-xs text-red-500 font-bold mt-1">{form.formState.errors.courseId.message}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-black text-gray-700 uppercase tracking-wider">Turma (Opcional)</label>
+                                    <select
+                                        {...form.register("classId")}
+                                        disabled={!selectedCourseId}
+                                        className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all appearance-none text-gray-900 font-bold disabled:opacity-50"
+                                    >
+                                        <option value="">Selecione a turma...</option>
+                                        {availableTurmas.map((t) => (
+                                            <option key={t.id} value={t.id}>
+                                                {t.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

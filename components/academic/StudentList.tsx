@@ -25,6 +25,9 @@ interface Student {
             name: string;
         };
     }[];
+    turma?: {
+        name: string;
+    } | null;
 }
 
 interface StudentListProps {
@@ -32,9 +35,10 @@ interface StudentListProps {
     courses: { id: string; name: string }[];
     subjects: any[];
     accounts: any[];
+    turmas: { id: string; name: string; courseId: string }[];
 }
 
-export default function StudentList({ students, courses, subjects, accounts }: StudentListProps) {
+export default function StudentList({ students, courses, subjects, accounts, turmas }: StudentListProps) {
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
     const [enrollingStudent, setEnrollingStudent] = useState<Student | null>(null);
     const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
@@ -77,7 +81,15 @@ export default function StudentList({ students, courses, subjects, accounts }: S
                                         </div>
                                         <div>
                                             <p className="font-bold text-gray-900 group-hover:text-primary-600 transition-colors">{student.name}</p>
-                                            <p className="text-xs text-gray-500">ID: {student.id.slice(0, 8).toUpperCase()}</p>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">ID: {student.id.slice(0, 8).toUpperCase()}</p>
+                                                {student.turma && (
+                                                    <>
+                                                        <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                                                        <p className="text-[10px] text-primary-600 font-black uppercase tracking-widest">{student.turma.name}</p>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -174,13 +186,15 @@ export default function StudentList({ students, courses, subjects, accounts }: S
                         tenantId={editingStudent.tenantId}
                         courses={courses}
                         accounts={accounts}
+                        turmas={turmas}
                         onSuccess={() => setEditingStudent(null)}
                         initialData={{
                             id: editingStudent.id,
                             name: editingStudent.name,
                             email: editingStudent.email || "",
                             phone: editingStudent.phone || "",
-                            courseId: editingStudent.courseId || ""
+                            courseId: editingStudent.courseId || "",
+                            classId: (editingStudent as any).classId || ""
                         }}
                     />
                 )}

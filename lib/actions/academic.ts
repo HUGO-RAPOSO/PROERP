@@ -11,6 +11,7 @@ export async function createStudent(data: {
     email?: string;
     phone?: string;
     courseId: string;
+    classId?: string;
     tenantId: string;
     documentUrl?: string;
     enrollmentSlipUrl?: string;
@@ -26,6 +27,7 @@ export async function createStudent(data: {
                 email: data.email,
                 phone: data.phone,
                 courseId: data.courseId,
+                classId: data.classId,
                 tenantId: data.tenantId,
                 documentUrl: data.documentUrl,
                 enrollmentSlipUrl: data.enrollmentSlipUrl,
@@ -134,6 +136,7 @@ export async function updateStudent(id: string, data: Partial<{
     phone: string;
     status: string;
     courseId: string;
+    classId: string;
     documentUrl: string;
     enrollmentSlipUrl: string;
     enrollmentSlipNumber: string;
@@ -181,64 +184,91 @@ export async function deleteStudent(id: string) {
 }
 
 // Helper for conflict detection
-async function checkRoomConflict(tenantId: string, room: string, scheduleString: string, excludeClassId?: string) {
+async function checkRoomConflict(tenantId: string, room: string, scheduleString: string, excludeLessonId?: string) {
     if (!room || !scheduleString) return null;
 
     const normalizedRoom = room.trim();
 
-    // Fetch classes in the same room
+    // Fetch lessons in the same room
     let query = supabase
-        .from('Class')
-        .select('name, schedule')
+        .from('Lesson')
+        .select('id, schedule, class:Class(name)')
         .eq('tenantId', tenantId)
         .eq('room', normalizedRoom);
 
-    if (excludeClassId) {
-        query = query.neq('id', excludeClassId);
+    if (excludeLessonId) {
+        query = query.neq('id', excludeLessonId);
     }
 
-    const { data: existingClasses, error } = await query;
+    const { data: existingLessons, error } = await query;
 
     if (error) {
         console.error("Error checking room conflict:", error);
         return null;
     }
 
-    return checkOverlap(existingClasses, scheduleString, (existing, newSlot, oldSlot) => {
-        return `Conflito de Sala! A sala "${normalizedRoom}" já está ocupada por "${existing.name}" (${newSlot.day} ${oldSlot.start}-${oldSlot.end}).`;
+    return checkOverlap(existingLessons, scheduleString, (existing, newSlot, oldSlot) => {
+        const className = (existing as any).class?.name || "Outra turma";
+        return `Conflito de Sala! A sala "${normalizedRoom}" já está ocupada pela turma "${className}" (${newSlot.day} ${oldSlot.start}-${oldSlot.end}).`;
     });
 }
 
-// Helper for Class Name (Student Group) conflict
-async function checkClassConflict(tenantId: string, className: string, scheduleString: string, excludeClassId?: string) {
-    if (!className || !scheduleString) return null;
+// Helper for Lesson conflict within the same Turma
+async function checkTurmaConflict(tenantId: string, classId: string, scheduleString: string, excludeLessonId?: string) {
+    if (!classId || !scheduleString) return null;
 
-    // Fetch classes with the same Name (Cohort)
     let query = supabase
-        .from('Class')
-        .select('*, subject:Subject(*)')
+        .from('Lesson')
+        .select('id, schedule, subject:Subject(name)')
         .eq('tenantId', tenantId)
-        .eq('name', className);
+        .eq('classId', classId);
 
-    if (excludeClassId) {
-        query = query.neq('id', excludeClassId);
+    if (excludeLessonId) {
+        query = query.neq('id', excludeLessonId);
     }
 
-    const { data: existingClasses, error } = await query;
+    const { data: existingLessons, error } = await query;
 
     if (error) {
-        console.error("Error checking class conflict:", error);
+        console.error("Error checking turma conflict:", error);
         return null;
     }
 
-    return checkOverlap(existingClasses, scheduleString, (existing, newSlot, oldSlot) => {
+    return checkOverlap(existingLessons, scheduleString, (existing, newSlot, oldSlot) => {
         const subjectName = (existing as any).subject?.name || "Outra disciplina";
-        return `Conflito de Turma! A turma "${className}" já tem aula de "${subjectName}" agendada para ${newSlot.day} ${oldSlot.start}-${oldSlot.end}.`;
+        return `Conflito de Horário! Esta turma já tem aula de "${subjectName}" agendada para ${newSlot.day} ${oldSlot.start}-${oldSlot.end}.`;
+    });
+}
+
+async function checkTeacherConflict(tenantId: string, teacherId: string, scheduleString: string, excludeLessonId?: string) {
+    if (!teacherId || !scheduleString) return null;
+
+    let query = supabase
+        .from('Lesson')
+        .select('id, schedule, teacher:Teacher(name), class:Class(name)')
+        .eq('tenantId', tenantId)
+        .eq('teacherId', teacherId);
+
+    if (excludeLessonId) {
+        query = query.neq('id', excludeLessonId);
+    }
+
+    const { data: existingLessons, error } = await query;
+
+    if (error) {
+        console.error("Error checking teacher conflict:", error);
+        return null;
+    }
+
+    return checkOverlap(existingLessons, scheduleString, (existing, newSlot, oldSlot) => {
+        const teacherName = (existing as any).teacher?.name || "O professor";
+        const className = (existing as any).class?.name || "outra turma";
+        return `Conflito de Professor! ${teacherName} já tem aula na ${className} para ${newSlot.day} ${oldSlot.start}-${oldSlot.end}.`;
     });
 }
 
 function checkOverlap(
-    existingClasses: { name: string, schedule: string | null }[],
+    existing: any[],
     newScheduleString: string,
     onOverlap: (existing: any, newSlot: any, oldSlot: any) => string
 ): string | null {
@@ -246,10 +276,10 @@ function checkOverlap(
     try { newSchedules = JSON.parse(newScheduleString); } catch { return null; }
 
     if (Array.isArray(newSchedules)) {
-        for (const existing of existingClasses) {
-            if (!existing.schedule) continue;
+        for (const item of existing) {
+            if (!item.schedule) continue;
             let existingSchedules: any[] = [];
-            try { existingSchedules = JSON.parse(existing.schedule); } catch { continue; }
+            try { existingSchedules = JSON.parse(item.schedule); } catch { continue; }
 
             if (!Array.isArray(existingSchedules)) continue;
 
@@ -258,7 +288,7 @@ function checkOverlap(
                     if (newSlot.day === oldSlot.day) {
                         // Check time overlap
                         if (newSlot.start < oldSlot.end && newSlot.end > oldSlot.start) {
-                            return onOverlap(existing, newSlot, oldSlot);
+                            return onOverlap(item, newSlot, oldSlot);
                         }
                     }
                 }
@@ -270,27 +300,13 @@ function checkOverlap(
 
 export async function createClass(data: {
     name: string;
-    subjectId: string;
-    schedule?: string;
-    room?: string;
-    teacherId?: string;
+    courseId: string;
     tenantId: string;
 }) {
     try {
-        const cleanData = { ...data, room: data.room?.trim() };
-
-        if (cleanData.schedule) {
-            if (cleanData.room) {
-                const roomError = await checkRoomConflict(cleanData.tenantId, cleanData.room, cleanData.schedule);
-                if (roomError) return { success: false, error: roomError };
-            }
-            const classError = await checkClassConflict(cleanData.tenantId, cleanData.name, cleanData.schedule);
-            if (classError) return { success: false, error: classError };
-        }
-
         const { data: cls, error } = await supabase
             .from('Class')
-            .insert(cleanData)
+            .insert(data)
             .select()
             .single();
 
@@ -299,52 +315,132 @@ export async function createClass(data: {
         revalidatePath("/dashboard/academic");
         return { success: true, data: cls };
     } catch (error: any) {
-        return { success: false, error: error.message || "Erro desconhecido" };
+        return { success: false, error: error.message || "Erro ao criar turma" };
     }
 }
 
 export async function updateClass(id: string, data: Partial<{
     name: string;
-    subjectId: string;
-    schedule: string;
-    room: string;
-    teacherId: string;
+    courseId: string;
 }>) {
     try {
-        const { data: currentClass, error: fetchError } = await supabase
+        const { data: cls, error } = await supabase
             .from('Class')
-            .select('tenantId, room, schedule, name')
-            .eq('id', id)
-            .single();
-
-        if (fetchError || !currentClass) return { success: false, error: "Turma não encontrada" };
-
-        const finalRoom = (data.room !== undefined ? data.room : currentClass.room)?.trim();
-        const finalSchedule = data.schedule !== undefined ? data.schedule : currentClass.schedule;
-        const finalName = data.name || currentClass.name;
-
-        if (finalSchedule) {
-            if (finalRoom) {
-                const roomError = await checkRoomConflict(currentClass.tenantId, finalRoom, finalSchedule, id);
-                if (roomError) return { success: false, error: roomError };
-            }
-            const classError = await checkClassConflict(currentClass.tenantId, finalName, finalSchedule, id);
-            if (classError) return { success: false, error: classError };
-        }
-
-        const { data: cls, error: updateError } = await supabase
-            .from('Class')
-            .update({ ...data, room: data.room?.trim() })
+            .update(data)
             .eq('id', id)
             .select()
             .single();
 
-        if (updateError) throw updateError;
+        if (error) throw error;
 
         revalidatePath("/dashboard/academic");
         return { success: true, data: cls };
     } catch (error: any) {
-        return { success: false, error: error.message || "Erro desconhecido" };
+        return { success: false, error: error.message || "Erro ao atualizar turma" };
+    }
+}
+
+export async function createLesson(data: {
+    classId: string;
+    subjectId: string;
+    teacherId?: string;
+    room?: string;
+    schedule: string;
+    tenantId: string;
+}) {
+    try {
+        const { classId, subjectId, teacherId, room, schedule, tenantId } = data;
+
+        // 1. Conflict Checks
+        if (room) {
+            const roomError = await checkRoomConflict(tenantId, room, schedule);
+            if (roomError) return { success: false, error: roomError };
+        }
+
+        const turmaError = await checkTurmaConflict(tenantId, classId, schedule);
+        if (turmaError) return { success: false, error: turmaError };
+
+        if (teacherId) {
+            const teacherError = await checkTeacherConflict(tenantId, teacherId, schedule);
+            if (teacherError) return { success: false, error: teacherError };
+        }
+
+        // 2. Insert Lesson
+        const { data: lesson, error } = await supabase
+            .from('Lesson')
+            .insert(data)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        revalidatePath("/dashboard/academic");
+        return { success: true, data: lesson };
+    } catch (error: any) {
+        console.error("Error creating lesson:", error);
+        return { success: false, error: error.message || "Erro ao criar aula" };
+    }
+}
+
+export async function updateLesson(id: string, data: Partial<{
+    subjectId: string;
+    teacherId: string;
+    room: string;
+    schedule: string;
+}>) {
+    try {
+        const { data: current, error: fetchError } = await supabase
+            .from('Lesson')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !current) return { success: false, error: "Aula não encontrada" };
+
+        const finalRoom = data.room !== undefined ? data.room : current.room;
+        const finalSchedule = data.schedule !== undefined ? data.schedule : current.schedule;
+        const finalTeacherId = data.teacherId !== undefined ? data.teacherId : current.teacherId;
+
+        // Conflict Checks
+        if (finalSchedule) {
+            if (finalRoom) {
+                const roomError = await checkRoomConflict(current.tenantId, finalRoom, finalSchedule, id);
+                if (roomError) return { success: false, error: roomError };
+            }
+
+            const turmaError = await checkTurmaConflict(current.tenantId, current.classId, finalSchedule, id);
+            if (turmaError) return { success: false, error: turmaError };
+
+            if (finalTeacherId) {
+                const teacherError = await checkTeacherConflict(current.tenantId, finalTeacherId, finalSchedule, id);
+                if (teacherError) return { success: false, error: teacherError };
+            }
+        }
+
+        const { data: lesson, error } = await supabase
+            .from('Lesson')
+            .update(data)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        revalidatePath("/dashboard/academic");
+        return { success: true, data: lesson };
+    } catch (error: any) {
+        return { success: false, error: error.message || "Erro ao atualizar aula" };
+    }
+}
+
+export async function deleteLesson(id: string) {
+    try {
+        const { error } = await supabase.from('Lesson').delete().eq('id', id);
+        if (error) throw error;
+        revalidatePath("/dashboard/academic");
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message || "Erro ao excluir aula" };
     }
 }
 
@@ -382,36 +478,42 @@ export async function getCourseDashboardData(courseId: string) {
 
         if (courseError) throw courseError;
 
-        // 2. Fetch Students in this course with their active enrollment year
+        // 2. Fetch Students in this course
         const { data: students, error: studentError } = await supabase
             .from('Student')
             .select(`
                 *,
-                enrollments:Enrollment (year, status)
+                enrollments:Enrollment (year, status),
+                turma:Class(name)
             `)
             .eq('courseId', courseId)
             .order('name', { ascending: true });
 
         if (studentError) throw studentError;
 
-        // 3. Fetch Classes for the course's subjects
-        const subjectIds = course.subjects.map((s: any) => s.id);
-        const { data: classes, error: classesError } = await supabase
+        // 3. Fetch Turmas (Classes) for this course
+        const { data: turmas, error: turmasError } = await supabase
             .from('Class')
             .select(`
                 *,
-                subject:Subject (*),
-                teacher:Teacher (name)
+                lessons:Lesson (
+                    *,
+                    subject:Subject (*),
+                    teacher:Teacher (name)
+                ),
+                _count: {
+                    students:Student (id)
+                }
             `)
-            .in('subjectId', subjectIds.length > 0 ? subjectIds : ['00000000-0000-0000-0000-000000000000']);
+            .eq('courseId', courseId);
 
-        if (classesError) throw classesError;
+        if (turmasError) throw turmasError;
 
         return {
             success: true,
             course,
             students: students || [],
-            classes: classes || []
+            turmas: turmas || []
         };
     } catch (error: any) {
         console.error("Error fetching course dashboard data:", error);
@@ -419,40 +521,51 @@ export async function getCourseDashboardData(courseId: string) {
     }
 }
 
-export async function getTeacherClasses(teacherId: string) {
-    const { data: classes, error } = await supabase
-        .from('Class')
+export async function getTeacherLessons(teacherId: string) {
+    const { data: lessons, error } = await supabase
+        .from('Lesson')
         .select(`
             *,
             subject:Subject (
                 *,
                 course:Course (name)
-            )
+            ),
+            class:Class (name)
         `)
         .eq('teacherId', teacherId);
 
     if (error) {
-        console.error("Error fetching teacher classes:", error);
+        console.error("Error fetching teacher lessons:", error);
         throw new Error(error.message);
     }
 
-    return classes;
+    return lessons;
 }
 
-export async function getClassStudentsWithGrades(classId: string) {
-    // 1. First get the subjectId for this class
-    const { data: cls, error: classError } = await supabase
-        .from('Class')
-        .select('subjectId')
-        .eq('id', classId)
+export async function getLessonStudentsWithGrades(lessonId: string) {
+    // 1. Get the subjectId and classId for this lesson
+    const { data: lesson, error: lessonError } = await supabase
+        .from('Lesson')
+        .select('subjectId, classId')
+        .eq('id', lessonId)
         .single();
 
-    if (classError || !cls) {
-        console.error("Error fetching class subject:", classError);
+    if (lessonError || !lesson) {
+        console.error("Error fetching lesson details:", lessonError);
         return [];
     }
 
-    // 2. Fetch all enrollments for this specific Subject
+    // 2. Fetch all students in the Turma (Class) and their grades for this specific Subject
+    // Note: Enrollment is still by Subject, so we filter by studentId (from Class) and subjectId
+
+    // First get students in the turma
+    const { data: students } = await supabase
+        .from('Student')
+        .select('id')
+        .eq('classId', lesson.classId);
+
+    const studentIds = students?.map(s => s.id) || [];
+
     const { data: enrollments, error } = await supabase
         .from('Enrollment')
         .select(`
@@ -466,10 +579,11 @@ export async function getClassStudentsWithGrades(classId: string) {
                 exclusionGrade
             )
         `)
-        .eq('subjectId', cls.subjectId);
+        .eq('subjectId', lesson.subjectId)
+        .in('studentId', studentIds.length > 0 ? studentIds : ['00000000-0000-0000-0000-000000000000']);
 
     if (error) {
-        console.error("Error fetching class students with grades:", error);
+        console.error("Error fetching lesson students with grades:", error);
         throw new Error(error.message);
     }
 
@@ -672,31 +786,20 @@ export async function getStudentFullProfile(studentId: string) {
     }
 }
 
-export async function getClassGradesForReport(classId: string) {
-    // 1. Fetch Class and Subject details
+export async function getLessonGradesForReport(lessonId: string) {
+    // 1. Fetch Lesson and Context details
     if (!supabaseAdmin) {
         console.error("CRITICAL: Supabase Admin client is NOT initialized.");
         return { error: "Erro de Configuração: Chave de Administração (Service Role) não encontrada no servidor." };
     }
 
-    console.log(`[getClassGradesForReport] Received Raw Class ID: '${classId}'`);
-    const cleanClassId = classId?.trim();
-
-    // Validate UUID format to prevent DB errors
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!cleanClassId || !uuidRegex.test(cleanClassId)) {
-        console.error(`Invalid Class ID format: '${cleanClassId}'`);
-        return { error: `ID da Turma inválido ou malformado: '${cleanClassId}' (Verifique o link)` };
-    }
-
-    console.log(`Fetching report data for class: ${cleanClassId}`);
-
-    const { data: cls, error: classError } = await supabaseAdmin
-        .from('Class')
+    const { data: lesson, error: lessonError } = await supabaseAdmin
+        .from('Lesson')
         .select(`
-            name,
+            room,
             schedule,
             subjectId,
+            classId,
             subject:Subject (
                 name,
                 year,
@@ -706,22 +809,26 @@ export async function getClassGradesForReport(classId: string) {
                 waiverGrade,
                 exclusionGrade
             ),
+            class:Class (name),
             teacher:Teacher (name)
         `)
-        .eq('id', classId)
+        .eq('id', lessonId)
         .single();
 
-    if (classError) {
-        console.error("Error fetching class for report:", classError);
-        return { error: `Erro no Banco de Dados: ${classError.message}` };
+    if (lessonError || !lesson) {
+        console.error("Error fetching lesson for report:", lessonError);
+        return { error: "Aula não encontrada" };
     }
 
-    if (!cls) {
-        console.error(`Class not found with ID: ${cleanClassId}`);
-        return { error: "Turma não encontrada com o ID fornecido." };
-    }
+    // 2. Fetch Students in the Turma
+    const { data: students } = await supabaseAdmin
+        .from('Student')
+        .select('id')
+        .eq('classId', lesson.classId);
 
-    // 2. Fetch Enrollments explicitly LINKED to this class (and thus subject)
+    const studentIds = students?.map(s => s.id) || [];
+
+    // 3. Fetch Enrollments for these students in this subject
     const { data: enrollments, error } = await supabaseAdmin
         .from('Enrollment')
         .select(`
@@ -731,8 +838,9 @@ export async function getClassGradesForReport(classId: string) {
             grades:Grade (*),
             status 
         `)
-        .eq('subjectId', cls.subjectId) // Use subjectId from the Class record
-        .order('student(name)', { ascending: true }); // Sort by Student Name
+        .eq('subjectId', lesson.subjectId)
+        .in('studentId', studentIds.length > 0 ? studentIds : ['00000000-0000-0000-0000-000000000000'])
+        .order('student(name)', { ascending: true });
 
     if (error) {
         console.error("Error fetching report enrollments:", error);
@@ -740,7 +848,10 @@ export async function getClassGradesForReport(classId: string) {
     }
 
     return {
-        classDetails: cls,
+        lessonDetails: {
+            ...lesson,
+            name: lesson.class?.name // Compatibility for UI expecting 'name'
+        },
         enrollments: enrollments || []
     };
 }

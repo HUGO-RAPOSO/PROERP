@@ -23,8 +23,16 @@ export default async function AcademicPage() {
         { data: subjects },
         { data: accounts }
     ] = await Promise.all([
-        supabase.from('Student').select('*, course:Course (*), enrollments:Enrollment (*, subject:Subject (*, course:Course (name)))').eq('tenantId', tenantId).order('name', { ascending: true }),
-        supabase.from('Class').select('*, teacher:Teacher (*), subject:Subject (*), enrollments:Enrollment (count)').eq('tenantId', tenantId),
+        supabase.from('Student').select('*, course:Course (*), enrollments:Enrollment (*, subject:Subject (*, course:Course (name))), turma:Class(name)').eq('tenantId', tenantId).order('name', { ascending: true }),
+        supabase.from('Class').select(`
+            *,
+            lessons:Lesson (
+                *,
+                subject:Subject (*),
+                teacher:Teacher (name)
+            ),
+            students:Student (count)
+        `).eq('tenantId', tenantId),
         supabase.from('Course').select('*, subjects:Subject (*)').or(`tenantId.eq.${tenantId},tenantId.is.null`).order('name', { ascending: true }),
         supabase.from('Teacher').select('*').eq('tenantId', tenantId),
         supabase.from('Subject').select('*, course:Course(name)').or(`tenantId.eq.${tenantId},tenantId.is.null`),
@@ -32,9 +40,9 @@ export default async function AcademicPage() {
     ]);
 
     // Format classes to match the expected structure
-    const formattedClasses = (classes || []).map(c => ({
+    const formattedTurmas = (classes || []).map(c => ({
         ...c,
-        _count: { enrollments: (c.enrollments as any)?.[0]?.count || 0 }
+        _count: { students: (c.students as any)?.[0]?.count || 0 }
     }));
 
     // Format courses to include counts
@@ -51,7 +59,7 @@ export default async function AcademicPage() {
             tenantId={tenantId}
             teachers={teachers || []}
             courses={formattedCourses}
-            classes={formattedClasses || []}
+            classes={formattedTurmas || []}
             students={students || []}
             subjects={subjects || []}
             accounts={accounts || []}

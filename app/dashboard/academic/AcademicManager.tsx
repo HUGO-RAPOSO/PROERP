@@ -72,12 +72,10 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
                                 </button>
                             </>
                         )}
-                        {/* We can add actions for Courses tab here if needed */}
                     </div>
                 </div>
             </div>
 
-            {/* Content Area */}
             <div className="min-h-[600px] animate-in fade-in duration-500 slide-in-from-bottom-4">
                 {activeTab === "COURSES" ? (
                     <CourseManager tenantId={tenantId} courses={courses} />
@@ -91,7 +89,7 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
                                 </h3>
                             </div>
                             <ClassGrid
-                                classes={classes}
+                                turmas={classes}
                                 teachers={teachers}
                                 courses={courses}
                                 tenantId={tenantId}
@@ -104,15 +102,14 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
                                     Diretório de Alunos
                                     <span className="bg-primary-50 text-primary-600 text-xs px-2.5 py-1 rounded-full">{students.length}</span>
                                 </h3>
-                                <button className="text-sm font-semibold text-primary-600 hover:text-primary-700">Ver Relatórios</button>
+                                <button className="text-sm font-semibold text-primary-600 hover:text-primary-700">Relatórios</button>
                             </div>
-                            <StudentList students={students} courses={courses} subjects={subjects} accounts={accounts} />
+                            <StudentList students={students} courses={courses} subjects={subjects} accounts={accounts} turmas={classes} />
                         </section>
                     </div>
                 )}
             </div>
 
-            {/* Shared Modals */}
             <BaseModal
                 isOpen={isStudentOpen}
                 onClose={() => setIsStudentOpen(false)}
@@ -122,6 +119,7 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
                     tenantId={tenantId}
                     courses={courses}
                     accounts={accounts}
+                    turmas={classes}
                     onSuccess={() => setIsStudentOpen(false)}
                 />
             </BaseModal>
@@ -133,7 +131,6 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
             >
                 <ClassForm
                     tenantId={tenantId}
-                    teachers={teachers}
                     courses={courses}
                     onSuccess={() => setIsClassOpen(false)}
                 />
