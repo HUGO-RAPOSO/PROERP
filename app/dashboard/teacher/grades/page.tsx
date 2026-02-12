@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { getTeacherClasses, getClassStudentsWithGrades, saveGrade } from "@/lib/actions/academic";
+import { getTeacherLessons as getTeacherClasses, getLessonStudentsWithGrades as getClassStudentsWithGrades, saveGrade } from "@/lib/actions/academic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "react-hot-toast";
 
@@ -15,16 +15,22 @@ export default function TeacherGradesPage() {
 
     useEffect(() => {
         if (session?.user?.teacherId) {
-            getTeacherClasses(session.user.teacherId).then(setClasses);
+            getTeacherClasses(session.user.teacherId).then((res: any) => {
+                if (res.success) setClasses(res.data);
+            });
         }
     }, [session]);
 
-    const handleClassChange = async (classId: string) => {
-        setSelectedClass(classId);
+    const handleClassChange = async (lessonId: string) => {
+        setSelectedClass(lessonId);
         setLoading(true);
         try {
-            const data = await getClassStudentsWithGrades(classId);
-            setEnrollments(data);
+            const res = await getClassStudentsWithGrades(lessonId) as any;
+            if (res.success) {
+                setEnrollments(res.data || []);
+            } else {
+                toast.error(res.error || "Erro ao buscar alunos");
+            }
         } catch (error) {
             toast.error("Erro ao buscar alunos");
         } finally {
@@ -37,18 +43,20 @@ export default function TeacherGradesPage() {
         if (isNaN(numValue)) return;
 
         try {
-            await saveGrade({
+            const res = await saveGrade({
                 enrollmentId,
                 type,
                 value: numValue,
                 tenantId: session?.user?.tenantId!,
             });
 
-            // Note: Optimistic update or refetch would be ideal here to recalculate totals
-            // For now we just refetch
-            toast.success("Nota salva!");
-            const data = await getClassStudentsWithGrades(selectedClass);
-            setEnrollments(data);
+            if (res.success) {
+                toast.success("Nota salva!");
+                const dataRes = await getClassStudentsWithGrades(selectedClass) as any;
+                if (dataRes.success) setEnrollments(dataRes.data || []);
+            } else {
+                toast.error((res as any).error || "Erro ao salvar nota");
+            }
         } catch (error) {
             toast.error("Erro ao salvar nota");
         }

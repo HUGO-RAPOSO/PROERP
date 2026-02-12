@@ -522,72 +522,71 @@ export async function getCourseDashboardData(courseId: string) {
 }
 
 export async function getTeacherLessons(teacherId: string) {
-    const { data: lessons, error } = await supabase
-        .from('Lesson')
-        .select(`
-            *,
-            subject:Subject (
+    try {
+        const { data: lessons, error } = await supabase
+            .from('Lesson')
+            .select(`
                 *,
-                course:Course (name)
-            ),
-            class:Class (name)
-        `)
-        .eq('teacherId', teacherId);
+                subject:Subject (
+                    *,
+                    course:Course (name)
+                ),
+                class:Class (name)
+            `)
+            .eq('teacherId', teacherId);
 
-    if (error) {
+        if (error) throw error;
+        return { success: true, data: lessons || [] };
+    } catch (error: any) {
         console.error("Error fetching teacher lessons:", error);
-        throw new Error(error.message);
+        return { success: false, error: error.message };
     }
-
-    return lessons;
 }
 
 export async function getLessonStudentsWithGrades(lessonId: string) {
-    // 1. Get the subjectId and classId for this lesson
-    const { data: lesson, error: lessonError } = await supabase
-        .from('Lesson')
-        .select('subjectId, classId')
-        .eq('id', lessonId)
-        .single();
+    try {
+        // 1. Get the subjectId and classId for this lesson
+        const { data: lesson, error: lessonError } = await supabase
+            .from('Lesson')
+            .select('subjectId, classId')
+            .eq('id', lessonId)
+            .single();
 
-    if (lessonError || !lesson) {
-        console.error("Error fetching lesson details:", lessonError);
-        return [];
-    }
+        if (lessonError || !lesson) {
+            console.error("Error fetching lesson details:", lessonError);
+            return { success: false, error: "Aula não encontrada" };
+        }
 
-    // 2. Fetch all students in the Turma (Class) and their grades for this specific Subject
-    // Note: Enrollment is still by Subject, so we filter by studentId (from Class) and subjectId
+        // 2. Fetch all students in the Turma (Class) and their grades for this specific Subject
+        const { data: students } = await supabase
+            .from('Student')
+            .select('id')
+            .eq('classId', lesson.classId);
 
-    // First get students in the turma
-    const { data: students } = await supabase
-        .from('Student')
-        .select('id')
-        .eq('classId', lesson.classId);
+        const studentIds = students?.map(s => s.id) || [];
 
-    const studentIds = students?.map(s => s.id) || [];
+        const { data: enrollments, error } = await supabase
+            .from('Enrollment')
+            .select(`
+                id,
+                studentId,
+                student:Student (id, name),
+                grades:Grade (*),
+                subject:Subject (
+                    examWaiverPossible,
+                    waiverGrade,
+                    exclusionGrade
+                )
+            `)
+            .eq('subjectId', lesson.subjectId)
+            .in('studentId', studentIds.length > 0 ? studentIds : ['00000000-0000-0000-0000-000000000000']);
 
-    const { data: enrollments, error } = await supabase
-        .from('Enrollment')
-        .select(`
-            id,
-            studentId,
-            student:Student (id, name),
-            grades:Grade (*),
-            subject:Subject (
-                examWaiverPossible,
-                waiverGrade,
-                exclusionGrade
-            )
-        `)
-        .eq('subjectId', lesson.subjectId)
-        .in('studentId', studentIds.length > 0 ? studentIds : ['00000000-0000-0000-0000-000000000000']);
-
-    if (error) {
+        if (error) throw error;
+        return { success: true, data: enrollments || [] };
+    } catch (error: any) {
         console.error("Error fetching lesson students with grades:", error);
-        throw new Error(error.message);
+        return { success: false, error: error.message };
     }
-
-    return enrollments;
 }
 
 export async function saveGrade(data: {
@@ -787,71 +786,75 @@ export async function getStudentFullProfile(studentId: string) {
 }
 
 export async function getLessonGradesForReport(lessonId: string) {
-    // 1. Fetch Lesson and Context details
-    if (!supabaseAdmin) {
-        console.error("CRITICAL: Supabase Admin client is NOT initialized.");
-        return { error: "Erro de Configuração: Chave de Administração (Service Role) não encontrada no servidor." };
-    }
+    try {
+        // 1. Fetch Lesson and Context details
+        if (!supabaseAdmin) {
+            console.error("CRITICAL: Supabase Admin client is NOT initialized.");
+            return { success: false, error: "Erro de Configuração: Chave de Administração não encontrada no servidor." };
+        }
 
-    const { data: lesson, error: lessonError } = await supabaseAdmin
-        .from('Lesson')
-        .select(`
-            room,
-            schedule,
-            subjectId,
-            classId,
-            subject:Subject (
-                name,
-                year,
-                semester,
-                course:Course(name),
-                examWaiverPossible,
-                waiverGrade,
-                exclusionGrade
-            ),
-            class:Class (name),
-            teacher:Teacher (name)
-        `)
-        .eq('id', lessonId)
-        .single();
+        const { data: lesson, error: lessonError } = await supabaseAdmin
+            .from('Lesson')
+            .select(`
+                room,
+                schedule,
+                subjectId,
+                classId,
+                subject:Subject (
+                    name,
+                    year,
+                    semester,
+                    course:Course(name),
+                    examWaiverPossible,
+                    waiverGrade,
+                    exclusionGrade
+                ),
+                class:Class (name),
+                teacher:Teacher (name)
+            `)
+            .eq('id', lessonId)
+            .single();
 
-    if (lessonError || !lesson) {
-        console.error("Error fetching lesson for report:", lessonError);
-        return { error: "Aula não encontrada" };
-    }
+        if (lessonError || !lesson) {
+            return { success: false, error: "Aula não encontrada" };
+        }
 
-    // 2. Fetch Students in the Turma
-    const { data: students } = await supabaseAdmin
-        .from('Student')
-        .select('id')
-        .eq('classId', lesson.classId);
+        // 2. Fetch Students in the Turma
+        const { data: students } = await supabaseAdmin
+            .from('Student')
+            .select('id')
+            .eq('classId', lesson.classId);
 
-    const studentIds = students?.map(s => s.id) || [];
+        const studentIds = students?.map(s => s.id) || [];
 
-    // 3. Fetch Enrollments for these students in this subject
-    const { data: enrollments, error } = await supabaseAdmin
-        .from('Enrollment')
-        .select(`
-            id,
-            studentId,
-            student:Student (id, name, enrollmentSlipNumber),
-            grades:Grade (*),
-            status 
-        `)
-        .eq('subjectId', lesson.subjectId)
-        .in('studentId', studentIds.length > 0 ? studentIds : ['00000000-0000-0000-0000-000000000000'])
-        .order('student(name)', { ascending: true });
+        // 3. Fetch Enrollments for these students in this subject
+        const { data: enrollments, error } = await supabaseAdmin
+            .from('Enrollment')
+            .select(`
+                id,
+                studentId,
+                student:Student (id, name, enrollmentSlipNumber),
+                grades:Grade (*),
+                status 
+            `)
+            .eq('subjectId', lesson.subjectId)
+            .in('studentId', studentIds.length > 0 ? studentIds : ['00000000-0000-0000-0000-000000000000'])
+            .order('student(name)', { ascending: true });
 
-    if (error) {
+        if (error) throw error;
+
+        return {
+            success: true,
+            data: {
+                lessonDetails: {
+                    ...lesson,
+                    name: (lesson.class as any)?.name
+                },
+                enrollments: enrollments || []
+            }
+        };
+    } catch (error: any) {
         console.error("Error fetching report enrollments:", error);
-        throw new Error(error.message);
+        return { success: false, error: error.message };
     }
-
-    return {
-        lessonDetails: {
-            ...lesson,
-            name: lesson.class?.name // Compatibility for UI expecting 'name'
-        },
-        enrollments: enrollments || []
-    };
 }
