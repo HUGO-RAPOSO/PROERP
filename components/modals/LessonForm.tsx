@@ -10,7 +10,7 @@ import { Loader2, Trash2, AlertCircle, Clock, MapPin, User, BookOpen } from "luc
 const lessonSchema = z.object({
     subjectId: z.string().min(1, "Disciplina é obrigatória"),
     teacherId: z.string().optional().or(z.literal("")),
-    room: z.string().min(1, "Sala é obrigatória"),
+    roomId: z.string().min(1, "Sala é obrigatória"),
     schedule: z.string().optional().or(z.literal("")),
 });
 
@@ -23,9 +23,18 @@ interface LessonFormProps {
     initialData?: any; // Using any for simplicity with nested types from parent
     teachers?: { id: string; name: string }[];
     subjects?: { id: string; name: string; year: number }[];
+    rooms?: { id: string; name: string; capacity?: number }[];
 }
 
-export default function LessonForm({ tenantId, classId, onSuccess, initialData, teachers = [], subjects = [] }: LessonFormProps) {
+export default function LessonForm({
+    tenantId,
+    classId,
+    onSuccess,
+    initialData,
+    teachers = [],
+    subjects = [],
+    rooms = []
+}: LessonFormProps) {
     const [loading, setLoading] = useState(false);
 
     // Schedule State
@@ -44,7 +53,7 @@ export default function LessonForm({ tenantId, classId, onSuccess, initialData, 
         defaultValues: {
             subjectId: initialData?.subject?.id || initialData?.subjectId || "",
             teacherId: initialData?.teacher?.id || initialData?.teacherId || "",
-            room: initialData?.room || "",
+            roomId: initialData?.roomId || "",
             schedule: initialData?.schedule || "",
         },
     });
@@ -141,13 +150,19 @@ export default function LessonForm({ tenantId, classId, onSuccess, initialData, 
                         <MapPin className="w-4 h-4 text-primary-500" />
                         Sala
                     </label>
-                    <input
-                        {...form.register("room")}
+                    <select
+                        {...form.register("roomId")}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
-                        placeholder="Ex: Sala 101"
-                    />
-                    {form.formState.errors.room && (
-                        <p className="text-xs text-red-500 font-medium">{form.formState.errors.room.message}</p>
+                    >
+                        <option value="">Selecione uma sala...</option>
+                        {rooms.map((room) => (
+                            <option key={room.id} value={room.id}>
+                                {room.name} {room.capacity ? `(${room.capacity} lug.)` : ""}
+                            </option>
+                        ))}
+                    </select>
+                    {form.formState.errors.roomId && (
+                        <p className="text-xs text-red-500 font-medium">{form.formState.errors.roomId.message}</p>
                     )}
                 </div>
             </div>

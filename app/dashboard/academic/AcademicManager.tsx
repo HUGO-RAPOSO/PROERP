@@ -1,13 +1,16 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, MapPin, Edit2, Trash2, Users } from "lucide-react";
 import { useState } from "react";
 import BaseModal from "@/components/modals/BaseModal";
 import StudentForm from "@/components/modals/StudentForm";
 import ClassForm from "@/components/modals/ClassForm";
+import RoomForm from "@/components/modals/RoomForm";
 import CourseManager from "./CourseManager";
 import ClassGrid from "@/components/academic/ClassGrid";
 import StudentList from "@/components/academic/StudentList";
+import { deleteRoom } from "@/lib/actions/academic";
+import { toast } from "react-hot-toast";
 
 interface AcademicManagerProps {
     tenantId: string;
@@ -17,12 +20,26 @@ interface AcademicManagerProps {
     students: any[];
     subjects: any[];
     accounts: any[];
+    rooms: any[];
 }
 
-export default function AcademicManager({ tenantId, teachers, courses, classes, students, subjects, accounts }: AcademicManagerProps) {
-    const [activeTab, setActiveTab] = useState<"CLASSES" | "COURSES">("CLASSES");
+export default function AcademicManager({ tenantId, teachers, courses, classes, students, subjects, accounts, rooms }: AcademicManagerProps) {
+    const [activeTab, setActiveTab] = useState<"CLASSES" | "COURSES" | "ROOMS">("CLASSES");
     const [isStudentOpen, setIsStudentOpen] = useState(false);
     const [isClassOpen, setIsClassOpen] = useState(false);
+    const [isRoomOpen, setIsRoomOpen] = useState(false);
+    const [editingRoom, setEditingRoom] = useState<any>(null);
+
+    const handleDeleteRoom = async (id: string) => {
+        if (!confirm("Tem certeza que deseja excluir esta sala?")) return;
+        try {
+            const res = await deleteRoom(id);
+            if (res.success) toast.success("Sala excluída!");
+            else toast.error(res.error || "Erro ao excluir sala");
+        } catch (error) {
+            toast.error("Erro ao excluir sala");
+        }
+    };
 
     return (
         <div className="space-y-8">
@@ -34,18 +51,24 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
 
                 <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
                     {/* Tabs */}
-                    <div className="flex p-1.5 bg-gray-100/80 rounded-2xl border border-gray-200/50 self-start sm:self-auto">
+                    <div className="flex p-1.5 bg-gray-100/80 rounded-2xl border border-gray-200/50 self-start sm:self-auto overflow-x-auto">
                         <button
                             onClick={() => setActiveTab("CLASSES")}
-                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === "CLASSES" ? "bg-white text-primary-600 shadow-sm ring-1 ring-black/5" : "text-gray-500 hover:text-gray-700"}`}
+                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === "CLASSES" ? "bg-white text-primary-600 shadow-sm ring-1 ring-black/5" : "text-gray-500 hover:text-gray-700"}`}
                         >
                             Turmas e Alunos
                         </button>
                         <button
                             onClick={() => setActiveTab("COURSES")}
-                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === "COURSES" ? "bg-white text-primary-600 shadow-sm ring-1 ring-black/5" : "text-gray-500 hover:text-gray-700"}`}
+                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === "COURSES" ? "bg-white text-primary-600 shadow-sm ring-1 ring-black/5" : "text-gray-500 hover:text-gray-700"}`}
                         >
                             Cursos e Grade
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("ROOMS")}
+                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === "ROOMS" ? "bg-white text-primary-600 shadow-sm ring-1 ring-black/5" : "text-gray-500 hover:text-gray-700"}`}
+                        >
+                            Salas
                         </button>
                     </div>
 
@@ -53,9 +76,6 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
                     <div className="flex gap-2 self-start sm:self-auto ml-auto sm:ml-0">
                         {activeTab === "CLASSES" && (
                             <>
-                                <button className="hidden lg:flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all shadow-sm">
-                                    Importar
-                                </button>
                                 <button
                                     onClick={() => setIsClassOpen(true)}
                                     className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all shadow-sm whitespace-nowrap"
@@ -72,6 +92,15 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
                                 </button>
                             </>
                         )}
+                        {activeTab === "ROOMS" && (
+                            <button
+                                onClick={() => setIsRoomOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl font-bold text-sm hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20 whitespace-nowrap"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Nova Sala
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -79,6 +108,37 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
             <div className="min-h-[600px] animate-in fade-in duration-500 slide-in-from-bottom-4">
                 {activeTab === "COURSES" ? (
                     <CourseManager tenantId={tenantId} courses={courses} />
+                ) : activeTab === "ROOMS" ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {rooms.map((room) => (
+                            <div key={room.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group relative">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="p-3 bg-primary-50 text-primary-600 rounded-xl">
+                                        <MapPin className="w-6 h-6" />
+                                    </div>
+                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                        <button
+                                            onClick={() => setEditingRoom(room)}
+                                            className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteRoom(room.id)}
+                                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                                <h4 className="text-xl font-bold text-gray-900 mb-1">{room.name}</h4>
+                                <div className="flex items-center gap-2 text-gray-500 text-sm">
+                                    <Users className="w-4 h-4" />
+                                    <span>Capacidade: {room.capacity || "N/A"}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 ) : (
                     <div className="grid grid-cols-1 gap-8">
                         <section>
@@ -93,6 +153,7 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
                                 teachers={teachers}
                                 courses={courses}
                                 tenantId={tenantId}
+                                rooms={rooms}
                             />
                         </section>
 
@@ -133,6 +194,18 @@ export default function AcademicManager({ tenantId, teachers, courses, classes, 
                     tenantId={tenantId}
                     courses={courses}
                     onSuccess={() => setIsClassOpen(false)}
+                />
+            </BaseModal>
+
+            <BaseModal
+                isOpen={isRoomOpen || !!editingRoom}
+                onClose={() => { setIsRoomOpen(false); setEditingRoom(null); }}
+                title={editingRoom ? "Editar Sala" : "Nova Sala"}
+            >
+                <RoomForm
+                    tenantId={tenantId}
+                    initialData={editingRoom}
+                    onSuccess={() => { setIsRoomOpen(false); setEditingRoom(null); }}
                 />
             </BaseModal>
         </div>

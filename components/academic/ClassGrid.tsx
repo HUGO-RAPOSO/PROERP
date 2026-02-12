@@ -18,7 +18,10 @@ interface Lesson {
         id: string;
         name: string;
     } | null;
-    room: string | null;
+    roomId: string | null;
+    room: {
+        name: string;
+    } | null;
 }
 
 interface Turma {
@@ -37,9 +40,10 @@ interface ClassGridProps {
     teachers?: { id: string; name: string }[];
     courses?: any[];
     tenantId: string;
+    rooms?: any[];
 }
 
-export default function ClassGrid({ turmas, teachers = [], courses = [], tenantId }: ClassGridProps) {
+export default function ClassGrid({ turmas, teachers = [], courses = [], tenantId, rooms = [] }: ClassGridProps) {
     const [editingTurma, setEditingTurma] = useState<Turma | null>(null);
     const [editingLesson, setEditingLesson] = useState<Lesson & { classId: string } | null>(null);
     const [creatingLessonFor, setCreatingLessonFor] = useState<string | null>(null);
@@ -147,9 +151,9 @@ export default function ClassGrid({ turmas, teachers = [], courses = [], tenantI
                                             <Clock className="w-3 h-3 text-primary-400" />
                                             <span className="truncate" title={formatSchedule(lesson.schedule)}>{formatSchedule(lesson.schedule)}</span>
                                         </div>
-                                        {lesson.room && (
+                                        {lesson.room?.name && (
                                             <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-lg text-[9px] font-black uppercase tracking-widest">
-                                                SALA {lesson.room}
+                                                SALA {lesson.room.name}
                                             </span>
                                         )}
                                     </div>
@@ -198,6 +202,7 @@ export default function ClassGrid({ turmas, teachers = [], courses = [], tenantI
                     onSuccess={() => { setEditingLesson(null); setCreatingLessonFor(null); }}
                     teachers={teachers}
                     subjects={courses.find(c => c.id === (turmas.find(t => t.id === (editingLesson?.classId || creatingLessonFor))?.courseId))?.subjects || []}
+                    rooms={rooms}
                 />
             </BaseModal>
         </div>

@@ -184,17 +184,15 @@ export async function deleteStudent(id: string) {
 }
 
 // Helper for conflict detection
-async function checkRoomConflict(tenantId: string, room: string, scheduleString: string, excludeLessonId?: string) {
-    if (!room || !scheduleString) return null;
-
-    const normalizedRoom = room.trim();
+async function checkRoomConflict(tenantId: string, roomId: string, scheduleString: string, excludeLessonId?: string) {
+    if (!roomId || !scheduleString) return null;
 
     // Fetch lessons in the same room
     let query = supabase
         .from('Lesson')
-        .select('id, schedule, class:Class(name)')
+        .select('id, schedule, class:Class(name), room:Room(name)')
         .eq('tenantId', tenantId)
-        .eq('room', normalizedRoom);
+        .eq('roomId', roomId);
 
     if (excludeLessonId) {
         query = query.neq('id', excludeLessonId);
@@ -209,8 +207,69 @@ async function checkRoomConflict(tenantId: string, room: string, scheduleString:
 
     return checkOverlap(existingLessons, scheduleString, (existing, newSlot, oldSlot) => {
         const className = (existing as any).class?.name || "Outra turma";
-        return `Conflito de Sala! A sala "${normalizedRoom}" já está ocupada pela turma "${className}" (${newSlot.day} ${oldSlot.start}-${oldSlot.end}).`;
+        const roomName = (existing as any).room?.name || "sala";
+        return `Conflito de Sala! A sala "${roomName}" já está ocupada pela turma "${className}" (${newSlot.day} ${oldSlot.start}-${oldSlot.end}).`;
     });
+}
+
+// Room Management Actions
+export async function getRooms(tenantId: string) {
+    try {
+        const { data, error } = await supabase
+            .from('Room')
+            .select('*')
+            .eq('tenantId', tenantId)
+            .order('name', { ascending: true });
+
+        if (error) throw error;
+        return { success: true, data: data || [] };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function createRoom(data: { name: string; capacity?: number; tenantId: string }) {
+    try {
+        const { data: room, error } = await supabase
+            .from('Room')
+            .insert(data)
+            .select()
+            .single();
+
+        if (error) throw error;
+        revalidatePath("/dashboard/academic");
+        return { success: true, data: room };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function updateRoom(id: string, data: Partial<{ name: string; capacity: number }>) {
+    try {
+        const { data: room, error } = await supabase
+            .from('Room')
+            .update(data)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        revalidatePath("/dashboard/academic");
+        return { success: true, data: room };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function deleteRoom(id: string) {
+    try {
+        const { error } = await supabase.from('Room').delete().eq('id', id);
+        if (error) throw error;
+        revalidatePath("/dashboard/academic");
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
 }
 
 // Helper for Lesson conflict within the same Turma
@@ -344,16 +403,17 @@ export async function createLesson(data: {
     classId: string;
     subjectId: string;
     teacherId?: string;
-    room?: string;
+    roomId?: string;
+    room?: string; // Kept for backward compatibility or if no roomId is provided
     schedule: string;
     tenantId: string;
 }) {
     try {
-        const { classId, subjectId, teacherId, room, schedule, tenantId } = data;
+        const { classId, subjectId, teacherId, roomId, schedule, tenantId } = data;
 
         // 1. Conflict Checks
-        if (room) {
-            const roomError = await checkRoomConflict(tenantId, room, schedule);
+        if (roomId) {
+            const roomError = await checkRoomConflict(tenantId, roomId, schedule);
             if (roomError) return { success: false, error: roomError };
         }
 
@@ -385,6 +445,7 @@ export async function createLesson(data: {
 export async function updateLesson(id: string, data: Partial<{
     subjectId: string;
     teacherId: string;
+    roomId: string;
     room: string;
     schedule: string;
 }>) {
@@ -397,14 +458,14 @@ export async function updateLesson(id: string, data: Partial<{
 
         if (fetchError || !current) return { success: false, error: "Aula não encontrada" };
 
-        const finalRoom = data.room !== undefined ? data.room : current.room;
+        const finalRoomId = data.roomId !== undefined ? data.roomId : current.roomId;
         const finalSchedule = data.schedule !== undefined ? data.schedule : current.schedule;
         const finalTeacherId = data.teacherId !== undefined ? data.teacherId : current.teacherId;
 
         // Conflict Checks
         if (finalSchedule) {
-            if (finalRoom) {
-                const roomError = await checkRoomConflict(current.tenantId, finalRoom, finalSchedule, id);
+            if (finalRoomId) {
+                const roomError = await checkRoomConflict(current.tenantId, finalRoomId, finalSchedule, id);
                 if (roomError) return { success: false, error: roomError };
             }
 

@@ -21,7 +21,8 @@ export default async function AcademicPage() {
         { data: courses },
         { data: teachers },
         { data: subjects },
-        { data: accounts }
+        { data: accounts },
+        { data: rooms }
     ] = await Promise.all([
         supabase.from('Student').select('*, course:Course (*), enrollments:Enrollment (*, subject:Subject (*, course:Course (name))), turma:Class(name)').eq('tenantId', tenantId).order('name', { ascending: true }),
         supabase.from('Class').select(`
@@ -29,14 +30,16 @@ export default async function AcademicPage() {
             lessons:Lesson (
                 *,
                 subject:Subject (*),
-                teacher:Teacher (name)
+                teacher:Teacher (name),
+                room:Room (name)
             ),
             students:Student (count)
         `).eq('tenantId', tenantId),
         supabase.from('Course').select('*, subjects:Subject (*)').or(`tenantId.eq.${tenantId},tenantId.is.null`).order('name', { ascending: true }),
         supabase.from('Teacher').select('*').eq('tenantId', tenantId),
         supabase.from('Subject').select('*, course:Course(name)').or(`tenantId.eq.${tenantId},tenantId.is.null`),
-        supabase.from('Account').select('*').eq('tenantId', tenantId)
+        supabase.from('Account').select('*').eq('tenantId', tenantId),
+        supabase.from('Room').select('*').eq('tenantId', tenantId).order('name', { ascending: true })
     ]);
 
     // Format classes to match the expected structure
@@ -63,6 +66,7 @@ export default async function AcademicPage() {
             students={students || []}
             subjects={subjects || []}
             accounts={accounts || []}
+            rooms={rooms || []}
         />
     );
 }
