@@ -332,5 +332,6 @@ export default function CourseForm({ tenantId, onSuccess, initialData }: CourseF
                     </button>
                 )}
             </div>
-            );
+        </div>
+    );
 }
