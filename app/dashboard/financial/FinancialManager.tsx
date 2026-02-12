@@ -20,28 +20,30 @@ export default function FinancialManager({ tenantId, categories, accounts, stude
     const [isCatOpen, setIsCatOpen] = useState(false);
 
     return (
-        <>
-            <Link
-                href="/dashboard/financial/accounts"
-                className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-sm"
-            >
-                <Landmark className="w-5 h-5 text-gray-400" />
-                Contas
-            </Link>
+        <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center bg-gray-100/50 p-1 rounded-2xl border border-gray-200/50">
+                <Link
+                    href="/dashboard/financial/accounts"
+                    className="flex items-center gap-2 px-4 py-2 text-gray-600 rounded-xl text-sm font-bold hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all"
+                >
+                    <Landmark className="w-4 h-4" />
+                    Contas
+                </Link>
 
-            <button
-                onClick={() => setIsCatOpen(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-sm"
-            >
-                <Tags className="w-5 h-5 text-gray-400" />
-                Categorias
-            </button>
+                <button
+                    onClick={() => setIsCatOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 text-gray-600 rounded-xl text-sm font-bold hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all"
+                >
+                    <Tags className="w-4 h-4" />
+                    Categorias
+                </button>
+            </div>
 
             <button
                 onClick={() => setIsOpen(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20"
+                className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary-500/20"
             >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-5 h-5 font-bold" />
                 Nova Transação
             </button>
 
@@ -85,6 +87,6 @@ export default function FinancialManager({ tenantId, categories, accounts, stude
                     onSuccess={() => { }}
                 />
             </BaseModal>
-        </>
+        </div>
     );
 }

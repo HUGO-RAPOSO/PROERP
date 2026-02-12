@@ -98,32 +98,37 @@ export default async function FinancialPage() {
         .slice(0, 5);
 
     return (
-        <div className="space-y-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h2 className="text-3xl font-bold text-gray-900">Gestão Financeira</h2>
-                    <p className="text-gray-500">Acompanhe o fluxo de caixa e a saúde financeira da sua escola.</p>
+        <div className="space-y-10">
+            {/* Header Section */}
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 pb-2">
+                <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-primary-600 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/30">
+                            <DollarSign className="w-6 h-6 text-white" />
+                        </div>
+                        <h2 className="text-4xl font-black text-gray-900 tracking-tight">Financeiro</h2>
+                    </div>
+                    <p className="text-gray-500 font-medium max-w-md">Controle o fluxo de caixa, pagamentos e a saúde financeira da sua instituição em tempo real.</p>
                 </div>
 
-                <div className="flex gap-3">
-                    <Link
-                        href="/dashboard/financial/payroll"
-                        className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-sm"
-                    >
-                        <DollarSign className="w-5 h-5 text-green-600" />
-                        Folha de Pagamento
-                    </Link>
-                    <Link
-                        href="/dashboard/financial/tuition"
-                        className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-sm"
-                    >
-                        <CreditCard className="w-5 h-5 text-blue-600" />
-                        Mensalidades
-                    </Link>
-                    <button className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-sm">
-                        <Download className="w-5 h-5" />
-                        Relatórios
-                    </button>
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center bg-gray-100/50 p-1.5 rounded-2xl border border-gray-200/50">
+                        <Link
+                            href="/dashboard/financial/payroll"
+                            className="flex items-center gap-2 px-4 py-2.5 text-gray-600 rounded-xl text-sm font-bold hover:bg-white hover:text-green-600 hover:shadow-sm transition-all"
+                        >
+                            <DollarSign className="w-4 h-4" />
+                            Folha
+                        </Link>
+                        <Link
+                            href="/dashboard/financial/tuition"
+                            className="flex items-center gap-2 px-4 py-2.5 text-gray-600 rounded-xl text-sm font-bold hover:bg-white hover:text-blue-600 hover:shadow-sm transition-all"
+                        >
+                            <CreditCard className="w-4 h-4" />
+                            Mensalidades
+                        </Link>
+                    </div>
+
                     <FinancialManager
                         tenantId={tenantId}
                         categories={categories || []}
@@ -131,6 +136,10 @@ export default async function FinancialPage() {
                         students={students || []}
                         employees={employees || []}
                     />
+
+                    <button className="p-3 bg-white border border-gray-200 text-gray-500 rounded-xl hover:bg-gray-50 hover:text-primary-600 transition-all shadow-sm">
+                        <Download className="w-5 h-5" />
+                    </button>
                 </div>
             </div>
 
@@ -142,11 +151,14 @@ export default async function FinancialPage() {
                 expenseTrend={expenseTrend}
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+                <div className="lg:col-span-3 space-y-8">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-bold text-gray-900">Últimas Transações</h3>
-                        <button className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-primary-600 transition-colors">
+                        <div>
+                            <h3 className="text-2xl font-black text-gray-900 tracking-tight">Últimas Transações</h3>
+                            <p className="text-sm text-gray-500 font-medium">Histórico recente de todas as movimentações.</p>
+                        </div>
+                        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-sm font-bold text-gray-600 rounded-xl hover:bg-gray-50 transition-all shadow-sm">
                             <Filter className="w-4 h-4" />
                             Filtrar
                         </button>
@@ -160,20 +172,29 @@ export default async function FinancialPage() {
                     />
                 </div>
 
-                <div className="space-y-6">
-                    <h3 className="text-xl font-bold text-gray-900">Resumo por Categoria</h3>
-                    <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
-                        <div className="space-y-6">
+                <div className="space-y-8">
+                    <div>
+                        <h3 className="text-2xl font-black text-gray-900 tracking-tight">Gastos</h3>
+                        <p className="text-sm text-gray-500 font-medium">Distribuição por categoria.</p>
+                    </div>
+
+                    <div className="bg-white rounded-[2rem] p-8 shadow-xl shadow-gray-200/50 border border-gray-100">
+                        <div className="space-y-8">
                             {topCategories.length > 0 ? (
                                 topCategories.map((cat) => (
-                                    <div key={cat.name} className="space-y-2">
-                                        <div className="flex justify-between text-sm font-medium">
-                                            <span className="text-gray-600">{cat.name}</span>
-                                            <span className="text-gray-900">{formatCurrency(cat.amount)}</span>
+                                    <div key={cat.name} className="space-y-3">
+                                        <div className="flex justify-between items-end">
+                                            <div className="space-y-1">
+                                                <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{cat.name}</span>
+                                                <p className="text-lg font-black text-gray-900 tracking-tight">{formatCurrency(cat.amount)}</p>
+                                            </div>
+                                            <span className="text-[10px] font-black text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">
+                                                {Math.round((cat.amount / (currentStats.expense || 1)) * 100)}%
+                                            </span>
                                         </div>
-                                        <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                        <div className="h-3 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100">
                                             <div
-                                                className="h-full rounded-full transition-all duration-500"
+                                                className="h-full rounded-full transition-all duration-1000 ease-out shadow-sm"
                                                 style={{
                                                     width: `${Math.min((cat.amount / (currentStats.expense || 1)) * 100, 100)}%`,
                                                     backgroundColor: cat.color
@@ -183,9 +204,18 @@ export default async function FinancialPage() {
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-gray-500 text-sm py-4 text-center">Nenhuma despesa categorizada no momento.</p>
+                                <div className="py-12 text-center space-y-3">
+                                    <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto text-gray-300">
+                                        <Filter className="w-6 h-6" />
+                                    </div>
+                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Sem dados</p>
+                                </div>
                             )}
                         </div>
+
+                        <button className="w-full mt-10 py-4 bg-gray-50 text-gray-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-gray-100 transition-all border border-gray-100">
+                            Ver todos os detalhes
+                        </button>
                     </div>
                 </div>
             </div>
