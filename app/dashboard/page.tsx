@@ -35,12 +35,15 @@ export default async function DashboardPage() {
         supabase.from('Employee').select('*', { count: 'exact', head: true }).eq('tenantId', tenantId),
         supabase.from('Class').select('*', { count: 'exact', head: true }).eq('tenantId', tenantId),
         supabase.from('Transaction').select('amount').eq('tenantId', tenantId).eq('type', 'INCOME').gte('date', startOfMonth).lte('date', endOfMonth),
-        supabase.from('Enrollment').select('*, student:Student!inner(*), class:Class(*)').eq('student.tenantId', tenantId).order('year', { ascending: false }).limit(5),
+        supabase.from('Enrollment').select('*, student:Student!inner(*), subject:Subject(*)').eq('student.tenantId', tenantId).order('year', { ascending: false }).limit(5),
         supabase.from('Event').select('*').eq('tenantId', tenantId).gte('date', now.toISOString()).order('date', { ascending: true }).limit(3)
     ]);
 
     const totalRevenue = revenueData?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
-    const recentEnrollments = recentEnrollmentsData || [];
+    const recentEnrollments = (recentEnrollmentsData || []).map((e: any) => ({
+        ...e,
+        class: e.subject // Map subject to class as expected by the RecentEnrollments component
+    }));
 
     const stats = [
         {
