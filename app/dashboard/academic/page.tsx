@@ -14,46 +14,28 @@ export default async function AcademicPage() {
 
     const tenantId = session.user.tenantId;
 
-    const { data: students } = await supabase
-        .from('Student')
-        .select(`
-            *,
-            course:Course (*),
-            enrollments:Enrollment (
-                *,
-                subject:Subject (
-                    *,
-                    course:Course (name)
-                )
-            )
-        `)
-        .eq('tenantId', tenantId)
-        .order('name', { ascending: true });
+    // Fetch all academic data in parallel to eliminate waterfalls
+    const [
+        { data: students },
+        { data: classes },
+        { data: courses },
+        { data: teachers },
+        { data: subjects },
+        { data: accounts }
+    ] = await Promise.all([
+        supabase.from('Student').select('*, course:Course (*), enrollments:Enrollment (*, subject:Subject (*, course:Course (name)))').eq('tenantId', tenantId).order('name', { ascending: true }),
+        supabase.from('Class').select('*, teacher:Teacher (*), subject:Subject (*), enrollments:Enrollment (count)').eq('tenantId', tenantId),
+        supabase.from('Course').select('*, subjects:Subject (*)').or(`tenantId.eq.${tenantId},tenantId.is.null`).order('name', { ascending: true }),
+        supabase.from('Teacher').select('*').eq('tenantId', tenantId),
+        supabase.from('Subject').select('*, course:Course(name)').or(`tenantId.eq.${tenantId},tenantId.is.null`),
+        supabase.from('Account').select('*').eq('tenantId', tenantId)
+    ]);
 
-    const { data: classes } = await supabase
-        .from('Class')
-        .select(`
-            *,
-            teacher:Teacher (*),
-            subject:Subject (*),
-            enrollments:Enrollment (count)
-        `)
-        .eq('tenantId', tenantId);
-
-    // Filter classes to match the Prisma _count structure if possible, or handle in component
+    // Format classes to match the expected structure
     const formattedClasses = (classes || []).map(c => ({
         ...c,
         _count: { enrollments: (c.enrollments as any)?.[0]?.count || 0 }
     }));
-
-    const { data: courses } = await supabase
-        .from('Course')
-        .select(`
-            *,
-            subjects:Subject (*)
-        `)
-        .or(`tenantId.eq.${tenantId},tenantId.is.null`)
-        .order('name', { ascending: true });
 
     // Format courses to include counts
     const formattedCourses = (courses || []).map(c => ({
@@ -63,19 +45,6 @@ export default async function AcademicPage() {
             students: 0 // We'll need a different way to count students per course later
         }
     }));
-
-    // Extract unique teachers from classes
-    const { data: teachers } = await supabase.from('Teacher').select('*').eq('tenantId', tenantId);
-
-    const { data: subjects } = await supabase
-        .from('Subject')
-        .select('*, course:Course(name)')
-        .or(`tenantId.eq.${tenantId},tenantId.is.null`);
-
-    const { data: accounts } = await supabase
-        .from('Account')
-        .select('*')
-        .eq('tenantId', tenantId);
 
     return (
         <AcademicManager

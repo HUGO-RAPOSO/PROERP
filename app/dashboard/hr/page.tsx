@@ -15,14 +15,16 @@ export default async function HRPage() {
 
     const tenantId = session.user.tenantId;
 
-    const { data: employees } = await supabase
-        .from('Employee')
-        .select('*, role:Role(*)')
-        .eq('tenantId', tenantId)
-        .order('name', { ascending: true });
-
-    const { data: roles } = await supabase.from('Role').select('*').eq('tenantId', tenantId);
-    const { data: contracts } = await supabase.from('Contract').select('*').eq('tenantId', tenantId);
+    // Fetch HR data in parallel to eliminate waterfalls
+    const [
+        { data: employees },
+        { data: roles },
+        { data: contracts }
+    ] = await Promise.all([
+        supabase.from('Employee').select('*, role:Role(*)').eq('tenantId', tenantId).order('name', { ascending: true }),
+        supabase.from('Role').select('*').eq('tenantId', tenantId),
+        supabase.from('Contract').select('*').eq('tenantId', tenantId)
+    ]);
 
     const totalEmployees = employees?.length || 0;
     const activeEmployees = employees?.filter((e: any) => e.status === "ACTIVE").length || 0;

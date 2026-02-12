@@ -15,42 +15,32 @@ export default async function DashboardPage() {
 
     const tenantId = session.user.tenantId;
 
-    // Fetch stats
-    const { data: tenant } = await supabase
-        .from('Tenant')
-        .select('name')
-        .eq('id', tenantId)
-        .single();
-
-    const { count: studentCount } = await supabase
-        .from('Student')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenantId', tenantId);
-
-    const { count: employeeCount } = await supabase
-        .from('Employee')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenantId', tenantId);
-
-    const { count: classCount } = await supabase
-        .from('Class')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenantId', tenantId);
-
-    // Calculate Monthly Revenue
+    // Calculate Monthly Revenue dates
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
 
-    const { data: revenueData } = await supabase
-        .from('Transaction')
-        .select('amount')
-        .eq('tenantId', tenantId)
-        .eq('type', 'INCOME')
-        .gte('date', startOfMonth)
-        .lte('date', endOfMonth);
+    // Fetch stats in parallel
+    const [
+        { data: tenant },
+        { count: studentCount },
+        { count: employeeCount },
+        { count: classCount },
+        { data: revenueData },
+        { data: recentEnrollmentsData },
+        { data: upcomingEventsData }
+    ] = await Promise.all([
+        supabase.from('Tenant').select('name').eq('id', tenantId).single(),
+        supabase.from('Student').select('*', { count: 'exact', head: true }).eq('tenantId', tenantId),
+        supabase.from('Employee').select('*', { count: 'exact', head: true }).eq('tenantId', tenantId),
+        supabase.from('Class').select('*', { count: 'exact', head: true }).eq('tenantId', tenantId),
+        supabase.from('Transaction').select('amount').eq('tenantId', tenantId).eq('type', 'INCOME').gte('date', startOfMonth).lte('date', endOfMonth),
+        supabase.from('Enrollment').select('*, student:Student!inner(*), class:Class(*)').eq('student.tenantId', tenantId).order('year', { ascending: false }).limit(5),
+        supabase.from('Event').select('*').eq('tenantId', tenantId).gte('date', now.toISOString()).order('date', { ascending: true }).limit(3)
+    ]);
 
     const totalRevenue = revenueData?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+    const recentEnrollments = recentEnrollmentsData || [];
 
     const stats = [
         {
@@ -83,21 +73,7 @@ export default async function DashboardPage() {
         },
     ] as const;
 
-    const { data: recentEnrollments } = await supabase
-        .from('Enrollment')
-        .select('*, student:Student(*), class:Class(*)')
-        .order('year', { ascending: false })
-        .limit(5);
-
     // Upcoming Events
-    const { data: upcomingEventsData } = await supabase
-        .from('Event')
-        .select('*')
-        .eq('tenantId', tenantId)
-        .gte('date', new Date().toISOString())
-        .order('date', { ascending: true })
-        .limit(3);
-
     const upcomingEvents = (upcomingEventsData || []).length > 0 ? upcomingEventsData!.map(e => ({
         ...e,
         date: new Date(e.date)
