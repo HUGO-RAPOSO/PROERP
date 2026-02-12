@@ -1,14 +1,17 @@
--- Create Room table
-CREATE TABLE IF NOT EXISTS "Room" (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
-    capacity INTEGER,
-    tenantId UUID NOT NULL,
-    createdAt TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- Drop table if it exists to fix casing issues
+DROP TABLE IF EXISTS "Room" CASCADE;
+
+-- Create Room table with quoted identifiers for case-sensitivity
+CREATE TABLE "Room" (
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "name" TEXT NOT NULL,
+    "capacity" INTEGER,
+    "tenantId" UUID NOT NULL,
+    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Add roomId to Lesson table
-ALTER TABLE "Lesson" ADD COLUMN IF NOT EXISTS "roomId" UUID REFERENCES "Room"(id);
+-- Add roomId to Lesson table with quoted identifier
+ALTER TABLE "Lesson" ADD COLUMN IF NOT EXISTS "roomId" UUID REFERENCES "Room"("id");
 
 -- Add RLS policies for Room
 ALTER TABLE "Room" ENABLE ROW LEVEL SECURITY;

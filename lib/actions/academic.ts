@@ -215,7 +215,8 @@ async function checkRoomConflict(tenantId: string, roomId: string, scheduleStrin
 // Room Management Actions
 export async function getRooms(tenantId: string) {
     try {
-        const { data, error } = await supabase
+        const client = supabaseAdmin || supabase;
+        const { data, error } = await client
             .from('Room')
             .select('*')
             .eq('tenantId', tenantId)
@@ -230,7 +231,8 @@ export async function getRooms(tenantId: string) {
 
 export async function createRoom(data: { name: string; capacity?: number; tenantId: string }) {
     try {
-        const { data: room, error } = await supabase
+        const client = supabaseAdmin || supabase;
+        const { data: room, error } = await client
             .from('Room')
             .insert(data)
             .select()
@@ -246,7 +248,8 @@ export async function createRoom(data: { name: string; capacity?: number; tenant
 
 export async function updateRoom(id: string, data: Partial<{ name: string; capacity: number }>) {
     try {
-        const { data: room, error } = await supabase
+        const client = supabaseAdmin || supabase;
+        const { data: room, error } = await client
             .from('Room')
             .update(data)
             .eq('id', id)
@@ -263,7 +266,8 @@ export async function updateRoom(id: string, data: Partial<{ name: string; capac
 
 export async function deleteRoom(id: string) {
     try {
-        const { error } = await supabase.from('Room').delete().eq('id', id);
+        const client = supabaseAdmin || supabase;
+        const { error } = await client.from('Room').delete().eq('id', id);
         if (error) throw error;
         revalidatePath("/dashboard/academic");
         return { success: true };
