@@ -5,6 +5,7 @@ import { formatCurrency } from "@/lib/utils";
 import FinancialSummary from "@/components/financial/FinancialSummary";
 import TransactionList from "@/components/financial/TransactionList";
 import FinancialManager from "./FinancialManager";
+import ReportGenerator from "@/components/financial/ReportGenerator";
 import { Download, Filter, DollarSign, CreditCard, Landmark } from "lucide-react";
 import Link from "next/link";
 import { getAccounts } from "@/lib/actions/accounts";
@@ -111,37 +112,37 @@ export default async function FinancialPage() {
                     <p className="text-gray-500 font-medium max-w-md">Controle o fluxo de caixa, pagamentos e a saúde financeira da sua instituição em tempo real.</p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center bg-gray-100/50 p-1.5 rounded-2xl border border-gray-200/50">
-                        <Link
-                            href="/dashboard/financial/payroll"
-                            className="flex items-center gap-2 px-4 py-2.5 text-gray-600 rounded-xl text-sm font-bold hover:bg-white hover:text-green-600 hover:shadow-sm transition-all"
-                        >
-                            <DollarSign className="w-4 h-4" />
-                            Folha
-                        </Link>
-                        <Link
-                            href="/dashboard/financial/tuition"
-                            className="flex items-center gap-2 px-4 py-2.5 text-gray-600 rounded-xl text-sm font-bold hover:bg-white hover:text-blue-600 hover:shadow-sm transition-all"
-                        >
-                            <CreditCard className="w-4 h-4" />
-                            Mensalidades
-                        </Link>
-                    </div>
-
-                    <FinancialManager
-                        tenantId={tenantId}
-                        categories={categories || []}
-                        accounts={accounts}
-                        students={students || []}
-                        employees={employees || []}
-                    />
-
-                    <button className="p-3 bg-white border border-gray-200 text-gray-500 rounded-xl hover:bg-gray-50 hover:text-primary-600 transition-all shadow-sm">
-                        <Download className="w-5 h-5" />
-                    </button>
+                <div className="flex items-center bg-gray-100/50 p-1.5 rounded-2xl border border-gray-200/50">
+                    <Link
+                        href="/dashboard/financial/payroll"
+                        className="flex items-center gap-2 px-4 py-2.5 text-gray-600 rounded-xl text-sm font-bold hover:bg-white hover:text-green-600 hover:shadow-sm transition-all"
+                    >
+                        <DollarSign className="w-4 h-4" />
+                        Folha
+                    </Link>
+                    <Link
+                        href="/dashboard/financial/tuition"
+                        className="flex items-center gap-2 px-4 py-2.5 text-gray-600 rounded-xl text-sm font-bold hover:bg-white hover:text-blue-600 hover:shadow-sm transition-all"
+                    >
+                        <CreditCard className="w-4 h-4" />
+                        Mensalidades
+                    </Link>
                 </div>
+
+                <FinancialManager
+                    tenantId={tenantId}
+                    categories={categories || []}
+                    accounts={accounts}
+                    students={students || []}
+                    employees={employees || []}
+                />
+
+                <ReportGenerator
+                    tenantId={tenantId}
+                    categories={categories || []}
+                />
             </div>
+
 
             <FinancialSummary
                 income={currentStats.income}

@@ -245,3 +245,45 @@ export async function processPayrollPayment(payrollId: string, categoryId: strin
         return { success: false, error: error.message || "Erro ao processar pagamento" };
     }
 }
+
+
+export async function getFinancialReportData(filters: {
+    startDate: Date;
+    endDate: Date;
+    type: "ALL" | "INCOME" | "EXPENSE";
+    categoryId?: string;
+    tenantId: string;
+}) {
+    try {
+        const client = supabaseAdmin || supabase;
+        let query = client
+            .from('Transaction')
+            .select(`
+                *,
+                category:Category(*),
+                student:Student(name),
+                employee:Employee(name)
+            `)
+            .eq('tenantId', filters.tenantId)
+            .gte('date', filters.startDate.toISOString())
+            .lte('date', filters.endDate.toISOString())
+            .order('date', { ascending: true });
+
+        if (filters.type !== 'ALL') {
+            query = query.eq('type', filters.type);
+        }
+
+        if (filters.categoryId && filters.categoryId !== 'ALL') {
+            query = query.eq('categoryId', filters.categoryId);
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+
+        return { success: true, data };
+    } catch (error: any) {
+        console.error("Error fetching report data:", error);
+        return { success: false, error: error.message };
+    }
+}
