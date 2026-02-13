@@ -569,9 +569,7 @@ export async function getCourseDashboardData(courseId: string) {
                     teacher:Teacher (name),
                     room:Room(name)
                 ),
-                _count: {
-                    students:Student (id)
-                }
+                students:Student(count)
             `)
             .eq('courseId', courseId);
 
