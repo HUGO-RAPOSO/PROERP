@@ -7,15 +7,20 @@ export async function createBook(data: {
     title: string;
     author: string;
     isbn?: string;
+    type: 'PHYSICAL' | 'DIGITAL' | 'BOTH';
     quantity: number;
+    available: number;
+    publisher?: string;
+    publishYear?: number;
+    pages?: number;
+    coverUrl?: string;
+    fileUrl?: string;
+    description?: string;
     tenantId: string;
 }) {
     const { data: book, error } = await supabase
         .from('Book')
-        .insert({
-            ...data,
-            available: data.quantity, // Initial availability equals quantity
-        })
+        .insert(data)
         .select()
         .single();
 
@@ -32,8 +37,15 @@ export async function updateBook(id: string, data: Partial<{
     title: string;
     author: string;
     isbn: string;
+    type: 'PHYSICAL' | 'DIGITAL' | 'BOTH';
     quantity: number;
     available: number;
+    publisher: string;
+    publishYear: number;
+    pages: number;
+    coverUrl: string;
+    fileUrl: string;
+    description: string;
 }>) {
     const { data: book, error } = await supabase
         .from('Book')

@@ -115,7 +115,14 @@ export default function BookTable({ books }: BookTableProps) {
                             title: editingBook.title,
                             author: editingBook.author,
                             isbn: editingBook.isbn || "",
-                            quantity: editingBook.quantity
+                            type: "PHYSICAL", // Default to PHYSICAL for backward compatibility
+                            quantity: editingBook.quantity,
+                            publisher: "",
+                            publishYear: 0,
+                            pages: 0,
+                            coverUrl: "",
+                            fileUrl: "",
+                            description: "",
                         }}
                     />
                 )}

@@ -2,9 +2,9 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import LibraryStats from "@/components/library/LibraryStats";
-import BookTable from "@/components/library/BookTable";
+import BookCard from "@/components/library/BookCard";
 import LibraryManager from "./LibraryManager";
-import { Search, Filter, BookOpen } from "lucide-react";
+import { Search, Filter, BookOpen, Grid, List } from "lucide-react";
 
 export default async function LibraryPage() {
     const session = await auth();
@@ -30,12 +30,15 @@ export default async function LibraryPage() {
         .eq('book.tenantId', tenantId)
         .eq('status', 'BORROWED');
 
+    const physicalBooks = (books || []).filter(b => b.type === 'PHYSICAL' || b.type === 'BOTH').length;
+    const digitalBooks = (books || []).filter(b => b.type === 'DIGITAL' || b.type === 'BOTH').length;
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900">Biblioteca</h2>
-                    <p className="text-gray-500">Gerencie o acervo de livros e o histórico de empréstimos.</p>
+                    <h2 className="text-3xl font-bold text-gray-900">Acervo Digital e Físico</h2>
+                    <p className="text-gray-500">Gerencie livros digitais, físicos e empréstimos.</p>
                 </div>
 
                 <LibraryManager
@@ -44,34 +47,85 @@ export default async function LibraryPage() {
                 />
             </div>
 
-            <LibraryStats
-                totalBooks={totalBooks}
-                availableBooks={availableBooks}
-                totalLoans={totalLoans || 0}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl p-6 text-white shadow-xl">
+                    <div className="flex items-center justify-between mb-4">
+                        <BookOpen className="w-8 h-8 opacity-80" />
+                        <span className="text-sm font-bold opacity-75">Total</span>
+                    </div>
+                    <p className="text-4xl font-black mb-1">{totalBooks}</p>
+                    <p className="text-sm font-medium opacity-90">Livros no acervo</p>
+                </div>
 
-            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
-                <div className="p-8 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <h3 className="text-xl font-bold text-gray-900">Acervo Digital</h3>
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl p-6 text-white shadow-xl">
+                    <div className="flex items-center justify-between mb-4">
+                        <BookOpen className="w-8 h-8 opacity-80" />
+                        <span className="text-sm font-bold opacity-75">Físicos</span>
+                    </div>
+                    <p className="text-4xl font-black mb-1">{physicalBooks}</p>
+                    <p className="text-sm font-medium opacity-90">Cópias físicas</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-3xl p-6 text-white shadow-xl">
+                    <div className="flex items-center justify-between mb-4">
+                        <BookOpen className="w-8 h-8 opacity-80" />
+                        <span className="text-sm font-bold opacity-75">Digitais</span>
+                    </div>
+                    <p className="text-4xl font-black mb-1">{digitalBooks}</p>
+                    <p className="text-sm font-medium opacity-90">E-books</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 text-white shadow-xl">
+                    <div className="flex items-center justify-between mb-4">
+                        <BookOpen className="w-8 h-8 opacity-80" />
+                        <span className="text-sm font-bold opacity-75">Empréstimos</span>
+                    </div>
+                    <p className="text-4xl font-black mb-1">{totalLoans || 0}</p>
+                    <p className="text-sm font-medium opacity-90">Ativos</p>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                    <h3 className="text-2xl font-black text-gray-900">Catálogo</h3>
                     <div className="flex gap-3 w-full md:w-auto">
                         <div className="relative flex-1 md:w-80">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Buscar título ou autor..."
-                                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                                placeholder="Buscar título, autor, ISBN..."
+                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                             />
                         </div>
-                        <button className="p-2 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors">
+                        <button className="p-2.5 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors">
                             <Filter className="w-5 h-5 text-gray-400" />
                         </button>
                     </div>
                 </div>
-                <BookTable books={books || []} />
-                {(books || []).length === 0 && (
+
+                {(books || []).length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {(books || []).map((book: any) => (
+                            <BookCard
+                                key={book.id}
+                                book={book}
+                                onBorrow={() => {
+                                    // TODO: Implement borrow action
+                                }}
+                                onDownload={() => {
+                                    // TODO: Implement download action
+                                    if (book.fileUrl) {
+                                        window.open(book.fileUrl, '_blank');
+                                    }
+                                }}
+                            />
+                        ))}
+                    </div>
+                ) : (
                     <div className="p-20 text-center">
-                        <BookOpen className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-                        <p className="text-gray-500">Nenhum livro cadastrado no acervo.</p>
+                        <BookOpen className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+                        <h4 className="text-xl font-black text-gray-900 mb-2">Nenhum livro cadastrado</h4>
+                        <p className="text-gray-500">Comece adicionando livros ao acervo</p>
                     </div>
                 )}
             </div>
