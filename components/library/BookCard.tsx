@@ -57,8 +57,8 @@ export default function BookCard({ book, onBorrow, onDownload }: BookCardProps) 
                 {book.type !== 'DIGITAL' && (
                     <div className="absolute bottom-3 left-3">
                         <div className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm ${book.available > 0
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-red-100 text-red-700'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-red-100 text-red-700'
                             }`}>
                             {book.available > 0 ? `${book.available} disponível` : 'Indisponível'}
                         </div>
@@ -98,17 +98,24 @@ export default function BookCard({ book, onBorrow, onDownload }: BookCardProps) 
 
                 {/* Action Buttons */}
                 <div className="flex gap-2 pt-2">
-                    {book.type !== 'DIGITAL' && book.available > 0 && onBorrow && (
+                    {book.type !== 'DIGITAL' && book.available > 0 && (
                         <button
                             onClick={onBorrow}
-                            className="flex-1 py-2.5 px-4 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition-all text-sm"
+                            className={`flex-1 py-2.5 px-4 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition-all text-sm ${!onBorrow ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={!onBorrow}
                         >
                             Emprestar
                         </button>
                     )}
-                    {(book.type === 'DIGITAL' || book.type === 'BOTH') && book.fileUrl && onDownload && (
+                    {(book.type === 'DIGITAL' || book.type === 'BOTH') && book.fileUrl && (
                         <button
-                            onClick={onDownload}
+                            onClick={() => {
+                                if (onDownload) {
+                                    onDownload();
+                                } else if (book.fileUrl) {
+                                    window.open(book.fileUrl, '_blank');
+                                }
+                            }}
                             className="flex-1 py-2.5 px-4 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all text-sm flex items-center justify-center gap-2"
                         >
                             <Download className="w-4 h-4" />

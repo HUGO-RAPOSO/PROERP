@@ -109,15 +109,6 @@ export default async function LibraryPage() {
                             <BookCard
                                 key={book.id}
                                 book={book}
-                                onBorrow={() => {
-                                    // TODO: Implement borrow action
-                                }}
-                                onDownload={() => {
-                                    // TODO: Implement download action
-                                    if (book.fileUrl) {
-                                        window.open(book.fileUrl, '_blank');
-                                    }
-                                }}
                             />
                         ))}
                     </div>
