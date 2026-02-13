@@ -9,6 +9,7 @@ interface TeacherClassCardProps {
             course: {
                 name: string;
             } | null;
+            code?: string;
         } | null;
         class: {
             name: string;
@@ -21,6 +22,7 @@ export default function TeacherClassCard({ lesson }: TeacherClassCardProps) {
     const subjectName = lesson.subject?.name || "Disciplina desconhecida";
     const className = lesson.class?.name || "Turma desconhecida";
     const courseName = lesson.subject?.course?.name || "Curso desconhecido";
+    const subjectCode = lesson.subject?.code;
 
     // Format schedule for display
     let scheduleDisplay = "Sem horário definido";
@@ -50,6 +52,9 @@ export default function TeacherClassCard({ lesson }: TeacherClassCardProps) {
                         <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 mb-1">
                             {subjectName}
                         </h3>
+                        {subjectCode && (
+                            <span className="text-xs text-gray-400 block mb-1">Cód: {subjectCode}</span>
+                        )}
                         <div className="flex items-center text-sm text-gray-500 mb-2">
                             <GraduationCap className="w-4 h-4 mr-1.5" />
                             <span className="line-clamp-1">{courseName}</span>

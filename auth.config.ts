@@ -29,6 +29,11 @@ export const authConfig = {
 
                     // Strict Role-Based Access Control for Teachers
                     if (auth?.user?.role === 'TEACHER') {
+                        // Specific redirect for legacy grades page
+                        if (nextUrl.pathname.startsWith('/dashboard/teacher/grades')) {
+                            return Response.redirect(new URL('/dashboard/teacher', nextUrl));
+                        }
+
                         // Allow access to Library and My Classes (Teacher Dashboard)
                         const isLibraryPage = nextUrl.pathname.startsWith('/dashboard/library');
                         const isTeacherDashboard = nextUrl.pathname === '/dashboard/teacher' || nextUrl.pathname.startsWith('/dashboard/teacher/');
