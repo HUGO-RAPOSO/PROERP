@@ -46,6 +46,11 @@ export default async function PrintGradesPage({ params }: PageProps) {
     return (
         <div className="bg-white p-8 min-h-screen text-black">
             {/* Header */}
+            <style type="text/css" media="print">
+                {`
+                    @page { size: landscape; }
+                `}
+            </style>
             <div className="mb-8 border-b-2 border-black pb-4">
                 <div className="flex justify-between items-start">
                     <div>
