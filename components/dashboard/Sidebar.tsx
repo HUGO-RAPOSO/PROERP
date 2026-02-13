@@ -43,6 +43,11 @@ export default function Sidebar({ userPermissions = [], userRole }: SidebarProps
     const isAdmin = userRole === 'ADMIN' || userRole === 'admin';
 
     const filteredItems = menuItems.filter(item => {
+        // Special case for Student: Only show Library
+        if (userRole === 'STUDENT') {
+            return item.name === 'Biblioteca';
+        }
+
         if (item.role && userRole !== item.role) return false;
         if (!item.permission) return true; // Always show if no permission required
         if (isAdmin) return true; // Admin sees everything

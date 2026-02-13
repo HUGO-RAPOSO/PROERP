@@ -2,6 +2,7 @@ import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 
 export const authConfig = {
+    // @ts-ignore
     providers: [
         Google({
             clientId: process.env.GOOGLE_CLIENT_ID,
@@ -9,6 +10,30 @@ export const authConfig = {
         }),
     ],
     callbacks: {
+        authorized({ auth, request: { nextUrl } }: any) {
+            const isLoggedIn = !!auth?.user;
+            const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+
+            if (isOnDashboard) {
+                if (isLoggedIn) {
+                    // Strict Role-Based Access Control for Students
+                    if (auth?.user?.role === 'STUDENT') {
+                        // Allow access only to Library and its sub-routes
+                        const isLibraryPage = nextUrl.pathname.startsWith('/dashboard/library');
+                        if (!isLibraryPage) {
+                            return Response.redirect(new URL('/dashboard/library', nextUrl));
+                        }
+                    }
+                    return true;
+                }
+                return false; // Redirect unauthenticated users to login page
+            } else if (isLoggedIn) {
+                if (nextUrl.pathname === '/') {
+                    return Response.redirect(new URL('/dashboard', nextUrl));
+                }
+            }
+            return true;
+        },
         async jwt({ token, user }) {
             if (user) {
                 const u = user as any;
