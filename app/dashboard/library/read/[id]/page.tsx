@@ -41,7 +41,7 @@ export default async function ReadBookPage(props: ReadBookPageProps) {
     if (!book.fileUrl) {
         return (
             <div className="p-8 text-center">
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">Este livro não disponível em formato digital</h1>
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">Este livro não está disponível em formato digital</h1>
                 <Link
                     href="/dashboard/library"
                     className="text-primary-600 hover:text-primary-700 font-medium"
@@ -81,13 +81,24 @@ export default async function ReadBookPage(props: ReadBookPageProps) {
 
             {/* PDF Viewer */}
             <div className="flex-1 bg-gray-100 relative">
-                <iframe
-                    src={viewerUrl}
-                    className="w-full h-full border-0"
+                <object
+                    data={viewerUrl}
+                    type="application/pdf"
+                    className="w-full h-full"
                     title={`Leitor: ${book.title}`}
-                    allow="autoplay" // minimal permissions
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups" // restricting some actions
-                />
+                >
+                    <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                        <p className="text-gray-500 mb-2">Não foi possível carregar o visualizador.</p>
+                        <a
+                            href={book.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary-600 font-bold hover:underline"
+                        >
+                            Clique aqui para abrir o arquivo
+                        </a>
+                    </div>
+                </object>
             </div>
         </div>
     );
