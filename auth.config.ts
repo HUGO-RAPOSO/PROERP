@@ -26,6 +26,17 @@ export const authConfig = {
                             return Response.redirect(new URL('/dashboard/library', nextUrl));
                         }
                     }
+
+                    // Strict Role-Based Access Control for Teachers
+                    if (auth?.user?.role === 'TEACHER') {
+                        // Allow access to Library and Teacher Grades
+                        const isLibraryPage = nextUrl.pathname.startsWith('/dashboard/library');
+                        const isGradesPage = nextUrl.pathname.startsWith('/dashboard/teacher/grades');
+
+                        if (!isLibraryPage && !isGradesPage) {
+                            return Response.redirect(new URL('/dashboard/teacher/grades', nextUrl));
+                        }
+                    }
                     return true;
                 }
                 return false; // Redirect unauthenticated users to login page

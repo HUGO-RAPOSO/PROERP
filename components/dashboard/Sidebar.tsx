@@ -48,6 +48,11 @@ export default function Sidebar({ userPermissions = [], userRole }: SidebarProps
             return item.name === 'Biblioteca' || item.name === 'Minhas Notas';
         }
 
+        // Special case for Teacher: Only show Library and Grades Input
+        if (userRole === 'TEACHER') {
+            return item.name === 'Biblioteca' || item.name === 'Lançar Notas';
+        }
+
         if (item.role && userRole !== item.role) return false;
         if (!item.permission) return true; // Always show if no permission required
         if (isAdmin) return true; // Admin sees everything

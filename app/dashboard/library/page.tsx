@@ -41,7 +41,7 @@ export default async function LibraryPage() {
                     <p className="text-gray-500">Gerencie livros digitais, físicos e empréstimos.</p>
                 </div>
 
-                {session.user.role !== 'STUDENT' && (
+                {session.user.role !== 'STUDENT' && session.user.role !== 'TEACHER' && (
                     <LibraryManager
                         tenantId={tenantId}
                         books={(books || []).map(b => ({ id: b.id, title: b.title, available: b.available }))}
