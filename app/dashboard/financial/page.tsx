@@ -154,16 +154,6 @@ export default async function FinancialPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
                 <div className="lg:col-span-3 space-y-8">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-2xl font-black text-gray-900 tracking-tight">Últimas Transações</h3>
-                            <p className="text-sm text-gray-500 font-medium">Histórico recente de todas as movimentações.</p>
-                        </div>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-sm font-bold text-gray-600 rounded-xl hover:bg-gray-50 transition-all shadow-sm">
-                            <Filter className="w-4 h-4" />
-                            Filtrar
-                        </button>
-                    </div>
                     <TransactionList
                         transactions={formattedTransactions}
                         categories={categories || []}
