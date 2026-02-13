@@ -72,6 +72,7 @@ export default async function PrintGradesPage({ params }: PageProps) {
                         <th className="border border-black px-2 py-1 w-16 text-center">P1</th>
                         <th className="border border-black px-2 py-1 w-16 text-center">P2</th>
                         <th className="border border-black px-2 py-1 w-16 text-center">T1</th>
+                        <th className="border border-black px-2 py-1 w-16 text-center bg-gray-50">Média</th>
                         <th className="border border-black px-2 py-1 w-16 text-center">Exame</th>
                         <th className="border border-black px-2 py-1 w-16 text-center">Rec.</th>
                         <th className="border border-black px-2 py-1 w-16 text-center">Final</th>
@@ -108,6 +109,13 @@ export default async function PrintGradesPage({ params }: PageProps) {
                                 <td className="border border-black px-2 py-1 text-center">{getGrade('P1')}</td>
                                 <td className="border border-black px-2 py-1 text-center">{getGrade('P2')}</td>
                                 <td className="border border-black px-2 py-1 text-center">{getGrade('T1')}</td>
+                                <td className="border border-black px-2 py-1 text-center font-bold bg-gray-50">
+                                    {(
+                                        ["P1", "P2", "T1"].every(type => getGrade(type) !== "-")
+                                            ? ((Number(getGrade('P1')) + Number(getGrade('P2')) + Number(getGrade('T1'))) / 3).toFixed(1)
+                                            : "-"
+                                    )}
+                                </td>
                                 <td className="border border-black px-2 py-1 text-center">{getGrade('EXAM')}</td>
                                 <td className="border border-black px-2 py-1 text-center">{getGrade('RESOURCE')}</td>
                                 <td className="border border-black px-2 py-1 text-center font-bold bg-gray-50">{getGrade('FINAL')}</td>
