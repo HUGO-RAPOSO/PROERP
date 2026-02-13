@@ -747,6 +747,27 @@ export async function enrollStudentInSubjects(data: {
     tenantId: string;
 }) {
     try {
+        const client = supabaseAdmin || supabase;
+
+        // 1. Check for existing enrollments in the same subjects and year
+        const { data: existing, error: checkError } = await client
+            .from('Enrollment')
+            .select('subject:Subject(name)')
+            .eq('studentId', data.studentId)
+            .eq('year', data.year)
+            .in('subjectId', data.subjectIds);
+
+        if (checkError) throw checkError;
+
+        if (existing && existing.length > 0) {
+            const subjectNames = existing.map((e: any) => e.subject?.name).join(', ');
+            return {
+                success: false,
+                error: `O aluno já está matriculado nestas cadeiras para o ano ${data.year}: ${subjectNames}`
+            };
+        }
+
+        // 2. Prepare new enrollments
         const enrollments = data.subjectIds.map(subjectId => ({
             studentId: data.studentId,
             subjectId: subjectId,
@@ -755,7 +776,7 @@ export async function enrollStudentInSubjects(data: {
             status: 'ACTIVE'
         }));
 
-        const { data: inserted, error } = await supabase
+        const { data: inserted, error } = await client
             .from('Enrollment')
             .insert(enrollments)
             .select();
