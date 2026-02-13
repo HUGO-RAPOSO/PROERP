@@ -29,12 +29,12 @@ export const authConfig = {
 
                     // Strict Role-Based Access Control for Teachers
                     if (auth?.user?.role === 'TEACHER') {
-                        // Allow access to Library and Teacher Grades
+                        // Allow access to Library and My Classes (Teacher Dashboard)
                         const isLibraryPage = nextUrl.pathname.startsWith('/dashboard/library');
-                        const isGradesPage = nextUrl.pathname.startsWith('/dashboard/teacher/grades');
+                        const isTeacherDashboard = nextUrl.pathname === '/dashboard/teacher' || nextUrl.pathname.startsWith('/dashboard/teacher/');
 
-                        if (!isLibraryPage && !isGradesPage) {
-                            return Response.redirect(new URL('/dashboard/teacher/grades', nextUrl));
+                        if (!isLibraryPage && !isTeacherDashboard) {
+                            return Response.redirect(new URL('/dashboard/teacher', nextUrl));
                         }
                     }
                     return true;
