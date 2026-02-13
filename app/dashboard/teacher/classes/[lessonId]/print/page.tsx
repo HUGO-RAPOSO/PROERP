@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { getLessonStudentsWithGrades } from "@/lib/actions/academic";
 import { supabase } from "@/lib/supabase";
 import { redirect } from "next/navigation";
+import PrintTrigger from "@/components/academic/PrintTrigger";
 
 interface PageProps {
     params: Promise<{ lessonId: string }>;
@@ -111,14 +112,8 @@ export default async function PrintGradesPage({ params }: PageProps) {
             </div>
 
             {/* Print Trigger */}
-            <script dangerouslySetInnerHTML={{ __html: `window.print();` }} />
-
-            <style jsx global>{`
-                @media print {
-                    @page { margin: 1cm; size: A4; }
-                    body { -webkit-print-color-adjust: exact; }
-                }
-            `}</style>
+            {/* Print Trigger & Styles */}
+            <PrintTrigger />
         </div>
     );
 }
