@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import ReportGenerator from '@/components/financial/ReportGenerator';
+
 interface RevenueData {
     totalIncomes: number;
     totalExpenses: number;
@@ -29,7 +31,13 @@ interface RevenueData {
     tenantName?: string;
 }
 
-export default function RevenueReport({ data }: { data: RevenueData }) {
+interface RevenueReportProps {
+    data: RevenueData;
+    categories: { id: string; name: string }[];
+    tenantId: string;
+}
+
+export default function RevenueReport({ data, categories, tenantId }: RevenueReportProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('ALL'); // ALL, INCOME, EXPENSE
     const [startDate, setStartDate] = useState('');
@@ -228,6 +236,10 @@ export default function RevenueReport({ data }: { data: RevenueData }) {
                         <Download className="w-4 h-4" />
                         Exportar Dados (Excel/CSV)
                     </button>
+                    <ReportGenerator
+                        tenantId={tenantId}
+                        categories={categories}
+                    />
                 </div>
             </div>
 

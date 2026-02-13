@@ -91,7 +91,16 @@ export default async function ReportsPage() {
         tenantName: tenant?.name || 'Minha Instituição'
     };
 
+    const { data: categories } = await supabase
+        .from('Category')
+        .select('id, name')
+        .eq('tenantId', tenantId);
+
     return (
-        <RevenueReport data={reportData} />
+        <RevenueReport
+            data={reportData}
+            categories={categories || []}
+            tenantId={tenantId}
+        />
     );
 }
