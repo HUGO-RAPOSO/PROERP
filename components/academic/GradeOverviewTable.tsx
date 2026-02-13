@@ -4,6 +4,7 @@ import { useState } from "react";
 import { saveGrade } from "@/lib/actions/academic";
 import { Loader2, Save, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { calculateStudentStatus } from "@/lib/academic-utils";
 
 interface GradeOverviewTableProps {
     students: any[];
@@ -79,84 +80,92 @@ export default function GradeOverviewTable({ students, lesson, currentTenantId }
                                     const isLoading = loading === key;
                                     const isSuccess = success === key;
 
-                                    // Calculate Average and Status for locking logic
-                                    const p1 = Number(enrollment.grades?.find((g: any) => g.type === 'P1')?.value);
-                                    const p2 = Number(enrollment.grades?.find((g: any) => g.type === 'P2')?.value);
-                                    const t1 = Number(enrollment.grades?.find((g: any) => g.type === 'T1')?.value);
-                                    const exam = Number(enrollment.grades?.find((g: any) => g.type === 'EXAM')?.value);
+                                    // Use shared calculation logic
+                                    const rules = {
+                                        waiverGrade: enrollment.subject?.waiverGrade,
+                                        exclusionGrade: enrollment.subject?.exclusionGrade
+                                    };
 
+                                    // Map grades to the helper format
+                                    const studentGrades = ['P1', 'P2', 'T1', 'EXAM', 'RESOURCE'].map(t => ({
+                                        type: t,
+                                        value: Number(enrollment.grades?.find((g: any) => g.type === t)?.value)
+                                    })).filter(g => !isNaN(g.value));
+
+                                    const status = calculateStudentStatus(studentGrades, rules);
                                     let isDisabled = false;
-                                    const hasContinuousGrades = !isNaN(p1) && !isNaN(p2) && !isNaN(t1);
+                                    let displayValue = getGradeValue(enrollment.id, type, grade?.value);
+                                    let isReadOnly = false;
 
-                                    if (hasContinuousGrades) {
-                                        const avg = (p1 + p2 + t1) / 3;
-
-                                        // Locking Logic
-                                        if (type === 'EXAM') {
-                                            // Lock Exam if Excluded (< 7) or Exempt (>= 14)
-                                            // Also default subject waiver/exclusion if present
-                                            const waiver = enrollment.subject?.waiverGrade ?? 14;
-                                            const exclusion = enrollment.subject?.exclusionGrade ?? 7;
-
-                                            if (avg < exclusion || avg >= waiver) {
-                                                isDisabled = true;
-                                            }
-                                        } else if (type === 'RESOURCE') {
-                                            // Lock Resource if NOT Failed Exam (< 10)
-                                            // Basically, only enable if Exam exists AND is < 10
-                                            if (isNaN(exam) || exam >= 10) {
-                                                isDisabled = true;
-                                            }
-                                        } else if (type === 'FINAL') {
-                                            // Usually auto-calculated or locked if excluded
-                                            // For now, let's lock it if Excluded
-                                            const exclusion = enrollment.subject?.exclusionGrade ?? 7;
-                                            if (avg < exclusion) {
-                                                isDisabled = true;
-                                            }
-                                        }
-                                    } else {
-                                        // If continuous grades are missing, logic typically dictates we can't do Exam yet.
-                                        // But to be safe/flexible, maybe we don't lock, OR we lock Exam until P1/P2/T1 are in.
-                                        // Let's lock Exam/Resource/Final if P1/P2/T1 are missing to force order.
-                                        if (['EXAM', 'RESOURCE', 'FINAL'].includes(type)) {
+                                    // Locking Logic based on calculated status
+                                    if (type === 'EXAM') {
+                                        // Lock Exam if Excluded or Exempt, or if continuous grades missing
+                                        if (status.isExcluded || status.isExempt || !status.hasContinuousGrades) {
                                             isDisabled = true;
                                         }
+                                    } else if (type === 'RESOURCE') {
+                                        // Lock Resource if NOT Recurrence
+                                        if (!status.isRecurrence) {
+                                            isDisabled = true;
+                                        }
+                                    } else if (type === 'FINAL') {
+                                        // Final is ALWAYS Auto-Calculated/Read-Only in this view?
+                                        // User asked for "nota final (deve ser automatica)"
+                                        // So we should display the calculated final grade and disable editing.
+                                        isDisabled = true;
+                                        isReadOnly = true;
+                                        if (status.finalGrade !== null) {
+                                            displayValue = status.finalGrade.toString();
+                                        } else {
+                                            displayValue = "-";
+                                        }
+                                    } else {
+                                        // P1, P2, T1
+                                        // Could lock if Exam is present? usually yes, but let's keep flexible for corrections.
                                     }
+
 
                                     return (
                                         <td key={type} className="px-6 py-4">
                                             <div className="flex items-center justify-center space-x-2">
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    max="20"
-                                                    step="0.1"
-                                                    disabled={isDisabled}
-                                                    className={`w-16 px-2 py-1 text-center border rounded-md outline-none transition-all ${isDisabled
-                                                            ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-                                                            : "border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                                        }`}
-                                                    value={getGradeValue(enrollment.id, type, grade?.value)}
-                                                    onChange={(e) => handleGradeChange(enrollment.id, type, e.target.value)}
-                                                />
-                                                {!isDisabled && (
-                                                    <button
-                                                        onClick={() => handleSave(enrollment.id, type)}
-                                                        disabled={isLoading}
-                                                        className={`p-1.5 rounded-md transition-colors ${isSuccess
-                                                            ? "text-green-500 bg-green-50"
-                                                            : "text-gray-400 hover:text-emerald-600 hover:bg-emerald-50"
-                                                            }`}
-                                                    >
-                                                        {isLoading ? (
-                                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                                        ) : isSuccess ? (
-                                                            <CheckCircle2 className="w-4 h-4" />
-                                                        ) : (
-                                                            <Save className="w-4 h-4" />
+                                                {isReadOnly ? (
+                                                    <span className="font-bold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-md min-w-[3rem] text-center block">
+                                                        {displayValue}
+                                                    </span>
+                                                ) : (
+                                                    <div className="flex items-center space-x-2">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            max="20"
+                                                            step="0.1"
+                                                            disabled={isDisabled}
+                                                            className={`w-16 px-2 py-1 text-center border rounded-md outline-none transition-all ${isDisabled
+                                                                ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                                                                : "border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                                                }`}
+                                                            value={displayValue}
+                                                            onChange={(e) => handleGradeChange(enrollment.id, type, e.target.value)}
+                                                        />
+                                                        {!isDisabled && (
+                                                            <button
+                                                                onClick={() => handleSave(enrollment.id, type)}
+                                                                disabled={isLoading}
+                                                                className={`p-1.5 rounded-md transition-colors ${isSuccess
+                                                                    ? "text-green-500 bg-green-50"
+                                                                    : "text-gray-400 hover:text-emerald-600 hover:bg-emerald-50"
+                                                                    }`}
+                                                            >
+                                                                {isLoading ? (
+                                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                                ) : isSuccess ? (
+                                                                    <CheckCircle2 className="w-4 h-4" />
+                                                                ) : (
+                                                                    <Save className="w-4 h-4" />
+                                                                )}
+                                                            </button>
                                                         )}
-                                                    </button>
+                                                    </div>
                                                 )}
                                             </div>
                                         </td>

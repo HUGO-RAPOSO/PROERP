@@ -3,6 +3,7 @@ import { getLessonStudentsWithGrades } from "@/lib/actions/academic";
 import { supabase } from "@/lib/supabase";
 import { redirect } from "next/navigation";
 import PrintTrigger from "@/components/academic/PrintTrigger";
+import { calculateStudentStatus } from "@/lib/academic-utils";
 
 interface PageProps {
     params: Promise<{ lessonId: string }>;
@@ -123,44 +124,71 @@ export default async function PrintGradesPage({ params }: PageProps) {
                                 </td>
                                 <td className="border border-black px-2 py-1 text-center">{getGrade('EXAM')}</td>
                                 <td className="border border-black px-2 py-1 text-center">{getGrade('RESOURCE')}</td>
-                                <td className="border border-black px-2 py-1 text-center font-bold bg-gray-50">{getGrade('FINAL')}</td>
-                                <td className={`border border-black px-2 py-1 text-center ${resultClass}`}>{result}</td>
+
+                                {/* Final Grade (Calculated) */}
+                                <td className="border border-black px-2 py-1 text-center font-bold bg-gray-50">
+                                    {(() => {
+                                        const rules = {
+                                            waiverGrade: enrollment.subject?.waiverGrade,
+                                            exclusionGrade: enrollment.subject?.exclusionGrade
+                                        };
+                                        const studentGrades = ['P1', 'P2', 'T1', 'EXAM', 'RESOURCE'].map(t => ({
+                                            type: t,
+                                            value: Number(getGrade(t) !== "-" ? getGrade(t) : NaN)
+                                        })).filter(g => !isNaN(g.value));
+
+                                        const status = calculateStudentStatus(studentGrades, rules);
+                                        return status.finalGrade !== null ? status.finalGrade : "-";
+                                    })()}
+                                </td>
+
+                                {/* Resultado / Status */}
+                                <td className={`border border-black px-2 py-1 text-center`}>
+                                    {(() => {
+                                        // We can use the status from helper, but we need to map internal status to 'Aprovado'/'Reprovado' text
+                                        // Or keep existing simple login if verified?
+                                        // User asked for "baseado na base de dados".
+                                        // Our helper does that.
+                                        const rules = {
+                                            waiverGrade: enrollment.subject?.waiverGrade,
+                                            exclusionGrade: enrollment.subject?.exclusionGrade
+                                        };
+                                        const studentGrades = ['P1', 'P2', 'T1', 'EXAM', 'RESOURCE'].map(t => ({
+                                            type: t,
+                                            value: Number(getGrade(t) !== "-" ? getGrade(t) : NaN)
+                                        })).filter(g => !isNaN(g.value));
+
+                                        const status = calculateStudentStatus(studentGrades, rules);
+
+                                        if (status.status === 'Approved' || status.status === 'Exempt') {
+                                            // Exempt means Approved without exam
+                                            return <span className="font-bold text-green-700">Aprovado</span>;
+                                        } else if (status.status === 'Failed' || status.status === 'Excluded') {
+                                            return <span className="font-bold text-red-700">Reprovado</span>;
+                                        } else {
+                                            return "-";
+                                        }
+                                    })()}
+                                </td>
+
+                                {/* Obs */}
                                 <td className="border border-black px-2 py-1 text-center text-xs font-medium">
                                     {(() => {
-                                        const p1 = Number(getGrade('P1'));
-                                        const p2 = Number(getGrade('P2'));
-                                        const t1 = Number(getGrade('T1'));
-                                        const exam = Number(getGrade('EXAM'));
-                                        const resource = Number(getGrade('RESOURCE'));
+                                        const rules = {
+                                            waiverGrade: enrollment.subject?.waiverGrade,
+                                            exclusionGrade: enrollment.subject?.exclusionGrade
+                                        };
+                                        const studentGrades = ['P1', 'P2', 'T1', 'EXAM', 'RESOURCE'].map(t => ({
+                                            type: t,
+                                            value: Number(getGrade(t) !== "-" ? getGrade(t) : NaN)
+                                        })).filter(g => !isNaN(g.value));
 
-                                        // Check if continuous assessment grades are present
-                                        if (isNaN(p1) || isNaN(p2) || isNaN(t1)) return "-";
+                                        const status = calculateStudentStatus(studentGrades, rules);
 
-                                        const avg = (p1 + p2 + t1) / 3;
-
-                                        // 1. Exclusion Check
-                                        // Default to 7 if exclusionGrade not set on Subject
-                                        const exclusioncutoff = enrollment.subject?.exclusionGrade ?? 7;
-                                        if (avg < exclusioncutoff) return <span className="text-red-600">Excluído</span>;
-
-                                        // 2. Recurrence Check
-                                        // If student took Exam and failed (< 10), they are in Recurrence
-                                        if (!isNaN(exam) && exam < 10) return <span className="text-orange-600">Recorrência</span>;
-
-                                        // 3. Admitted Check (Admitido)
-                                        // If not excluded and passed/not passed yet, but eligible for Exam.
-                                        // Usually >= 14 is "Dispensado" (Passed without exam), but user asked for "Admitido".
-                                        // We'll show "Admitido" if they are in the range that usually requires an exam (e.g. 7 - 13.9)
-                                        // OR if they are simply not excluded.
-                                        // Let's assume standard: < 14 and >= 7 is "Admitido" (to Exam).
-                                        const waiver = enrollment.subject?.waiverGrade ?? 14;
-                                        if (avg >= exclusioncutoff && avg < waiver) return "Admitido";
-
-                                        // If >= waiver, they are effectively "Dispensado" (Passed), but if user STRICTLY wants these 3 statuses:
-                                        // We can leave blank or show "Dispensado". 
-                                        // Given "Na observacao deve ter admito, excluite recorrencia", I'll infer "Dispensado" fits as a positive outcome or blank.
-                                        // I'll add "Dispensado" for clarity if they passed directly.
-                                        if (avg >= waiver) return <span className="text-green-600">Dispensado</span>;
+                                        if (status.isExcluded) return <span className="text-red-600">Excluído</span>;
+                                        if (status.isRecurrence) return <span className="text-orange-600">Recorrência</span>;
+                                        if (status.isExempt) return <span className="text-green-600">Dispensado</span>;
+                                        if (status.isAdmitted) return "Admitido";
 
                                         return "-";
                                     })()}
