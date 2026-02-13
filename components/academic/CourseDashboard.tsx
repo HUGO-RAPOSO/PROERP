@@ -196,19 +196,25 @@ export default function CourseDashboard({ courseId, onClose }: CourseDashboardPr
                 {activeTab === "SCHEDULE" && (
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {classes.map((cls: any) => {
-                                const schedules = JSON.parse(cls.schedule || "[]");
+                            {(classes || []).flatMap((cls: any) =>
+                                (cls.lessons || []).map((lesson: any) => ({
+                                    ...lesson,
+                                    className: cls.name,
+                                    classId: cls.id
+                                }))
+                            ).map((lesson: any) => {
+                                const schedules = JSON.parse(lesson.schedule || "[]");
 
                                 return (
-                                    <div key={cls.id} className="bg-white border-2 border-gray-50 rounded-[2.5rem] p-6 hover:border-primary-100 hover:shadow-xl hover:shadow-primary-600/5 transition-all group">
+                                    <div key={lesson.id} className="bg-white border-2 border-gray-50 rounded-[2.5rem] p-6 hover:border-primary-100 hover:shadow-xl hover:shadow-primary-600/5 transition-all group">
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="space-y-1">
-                                                <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest">{cls.subject?.name}</span>
-                                                <h4 className="text-xl font-black text-gray-900 leading-tight">{cls.name}</h4>
+                                                <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest">{lesson.subject?.name || "Sem Disciplina"}</span>
+                                                <h4 className="text-xl font-black text-gray-900 leading-tight">{lesson.className}</h4>
                                             </div>
                                             <div className="flex gap-2">
                                                 <a
-                                                    href={`/dashboard/academic/print/grades/${cls.id}`}
+                                                    href={`/dashboard/academic/print/grades/${lesson.id}`}
                                                     target="_blank"
                                                     className="p-3 bg-gray-50 text-gray-400 rounded-2xl transition-colors hover:bg-black hover:text-white"
                                                     title="Imprimir Pauta"
@@ -226,7 +232,7 @@ export default function CourseDashboard({ courseId, onClose }: CourseDashboardPr
                                                 <div className="w-8 h-8 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-primary-600">
                                                     <Users className="w-4 h-4" />
                                                 </div>
-                                                <span className="truncate">{cls.teacher?.name || "Sem Docente"}</span>
+                                                <span className="truncate">{lesson.teacher?.name || "Sem Docente"}</span>
                                             </div>
 
                                             <div className="space-y-2">
@@ -246,7 +252,7 @@ export default function CourseDashboard({ courseId, onClose }: CourseDashboardPr
 
                                         <div className="flex items-center gap-2 pt-4 border-t border-gray-50">
                                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Local: {cls.room?.name || "Não def."}</span>
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Local: {lesson.room?.name || "Não def."}</span>
                                         </div>
                                     </div>
                                 );
