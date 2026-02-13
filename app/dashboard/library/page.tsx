@@ -41,10 +41,12 @@ export default async function LibraryPage() {
                     <p className="text-gray-500">Gerencie livros digitais, físicos e empréstimos.</p>
                 </div>
 
-                <LibraryManager
-                    tenantId={tenantId}
-                    books={(books || []).map(b => ({ id: b.id, title: b.title, available: b.available }))}
-                />
+                {session.user.role !== 'STUDENT' && (
+                    <LibraryManager
+                        tenantId={tenantId}
+                        books={(books || []).map(b => ({ id: b.id, title: b.title, available: b.available }))}
+                    />
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

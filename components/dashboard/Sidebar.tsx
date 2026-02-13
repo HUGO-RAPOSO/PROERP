@@ -43,9 +43,9 @@ export default function Sidebar({ userPermissions = [], userRole }: SidebarProps
     const isAdmin = userRole === 'ADMIN' || userRole === 'admin';
 
     const filteredItems = menuItems.filter(item => {
-        // Special case for Student: Only show Library
+        // Special case for Student: Only show Library and Grades
         if (userRole === 'STUDENT') {
-            return item.name === 'Biblioteca';
+            return item.name === 'Biblioteca' || item.name === 'Minhas Notas';
         }
 
         if (item.role && userRole !== item.role) return false;

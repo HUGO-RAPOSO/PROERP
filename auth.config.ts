@@ -18,9 +18,11 @@ export const authConfig = {
                 if (isLoggedIn) {
                     // Strict Role-Based Access Control for Students
                     if (auth?.user?.role === 'STUDENT') {
-                        // Allow access only to Library and its sub-routes
+                        // Allow access to Library and My Grades
                         const isLibraryPage = nextUrl.pathname.startsWith('/dashboard/library');
-                        if (!isLibraryPage) {
+                        const isGradesPage = nextUrl.pathname.startsWith('/dashboard/student/grades');
+
+                        if (!isLibraryPage && !isGradesPage) {
                             return Response.redirect(new URL('/dashboard/library', nextUrl));
                         }
                     }
