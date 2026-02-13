@@ -22,6 +22,7 @@ import { PERMISSIONS, hasPermission } from "@/lib/utils/permissions";
 const menuItems = [
     { name: "Visão Geral", icon: LayoutDashboard, href: "/dashboard" }, // Public or basic access
     { name: "Minhas Notas", icon: PieChart, href: "/dashboard/student/grades", role: "STUDENT" },
+    { name: "Minhas Turmas", icon: Users, href: "/dashboard/teacher", role: "TEACHER" },
     { name: "Lançar Notas", icon: GraduationCap, href: "/dashboard/teacher/grades", role: "TEACHER" },
     { name: "Acadêmico", icon: GraduationCap, href: "/dashboard/academic", permission: PERMISSIONS.ACADEMIC_ACCESS },
     { name: "Financeiro", icon: DollarSign, href: "/dashboard/financial", permission: PERMISSIONS.FINANCIAL_ACCESS },
@@ -50,7 +51,7 @@ export default function Sidebar({ userPermissions = [], userRole }: SidebarProps
 
         // Special case for Teacher: Only show Library and Grades Input
         if (userRole === 'TEACHER') {
-            return item.name === 'Biblioteca' || item.name === 'Lançar Notas';
+            return item.name === 'Biblioteca' || item.name === 'Lançar Notas' || item.name === 'Minhas Turmas';
         }
 
         if (item.role && userRole !== item.role) return false;
