@@ -74,6 +74,7 @@ export default async function PrintGradesPage({ params }: PageProps) {
                         <th className="border border-black px-2 py-1 w-16 text-center">Exame</th>
                         <th className="border border-black px-2 py-1 w-16 text-center">Rec.</th>
                         <th className="border border-black px-2 py-1 w-16 text-center">Final</th>
+                        <th className="border border-black px-2 py-1 w-24 text-center">Resultado</th>
                         <th className="border border-black px-2 py-1 w-24 text-center">Obs</th>
                     </tr>
                 </thead>
@@ -84,6 +85,21 @@ export default async function PrintGradesPage({ params }: PageProps) {
                             return g ? g.value : "-";
                         };
 
+                        const finalGrade = enrollment.grades?.find((g: any) => g.type === 'FINAL')?.value;
+                        let result = "-";
+                        let resultClass = "";
+
+                        if (finalGrade !== undefined) {
+                            const gradeNum = Number(finalGrade);
+                            if (gradeNum >= 10) {
+                                result = "Aprovado";
+                                resultClass = "font-bold text-green-700"; // Though print might be B&W, good for screen check
+                            } else {
+                                result = "Reprovado";
+                                resultClass = "font-bold text-red-700";
+                            }
+                        }
+
                         return (
                             <tr key={enrollment.id}>
                                 <td className="border border-black px-2 py-1 text-center">{index + 1}</td>
@@ -93,6 +109,7 @@ export default async function PrintGradesPage({ params }: PageProps) {
                                 <td className="border border-black px-2 py-1 text-center">{getGrade('EXAM')}</td>
                                 <td className="border border-black px-2 py-1 text-center">{getGrade('RESOURCE')}</td>
                                 <td className="border border-black px-2 py-1 text-center font-bold bg-gray-50">{getGrade('FINAL')}</td>
+                                <td className={`border border-black px-2 py-1 text-center ${resultClass}`}>{result}</td>
                                 <td className="border border-black px-2 py-1"></td>
                             </tr>
                         );
