@@ -61,6 +61,7 @@ export default function GradeOverviewTable({ students, lesson, currentTenantId }
                             <th className="px-6 py-4 font-medium">Aluno</th>
                             <th className="px-6 py-4 font-medium w-32 text-center">P1</th>
                             <th className="px-6 py-4 font-medium w-32 text-center">P2</th>
+                            <th className="px-6 py-4 font-medium w-32 text-center">Trabalho (T1)</th>
                             <th className="px-6 py-4 font-medium w-32 text-center">Exame</th>
                             <th className="px-6 py-4 font-medium w-32 text-center">Recurso</th>
                             <th className="px-6 py-4 font-medium w-32 text-center">Final</th>
@@ -72,7 +73,7 @@ export default function GradeOverviewTable({ students, lesson, currentTenantId }
                                 <td className="px-6 py-4 font-medium text-gray-900">
                                     {enrollment.student?.name || "Aluno desconhecido"}
                                 </td>
-                                {['P1', 'P2', 'EXAM', 'RESOURCE', 'FINAL'].map((type) => {
+                                {['P1', 'P2', 'T1', 'EXAM', 'RESOURCE', 'FINAL'].map((type) => {
                                     const grade = enrollment.grades?.find((g: any) => g.type === type);
                                     const key = `${enrollment.id}-${type}`;
                                     const isLoading = loading === key;
