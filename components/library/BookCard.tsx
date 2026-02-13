@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { BookOpen, FileText, BookMarked, Download, Calendar } from "lucide-react";
 
 interface BookCardProps {
@@ -23,6 +24,7 @@ interface BookCardProps {
 }
 
 export default function BookCard({ book, onBorrow, onDownload }: BookCardProps) {
+    const router = useRouter();
     const TypeIcon = book.type === 'PHYSICAL' ? BookOpen : book.type === 'DIGITAL' ? FileText : BookMarked;
     const typeLabel = book.type === 'PHYSICAL' ? 'Físico' : book.type === 'DIGITAL' ? 'Digital' : 'Físico + Digital';
     const typeColor = book.type === 'PHYSICAL' ? 'bg-blue-100 text-blue-700' : book.type === 'DIGITAL' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700';
@@ -110,16 +112,18 @@ export default function BookCard({ book, onBorrow, onDownload }: BookCardProps) 
                     {(book.type === 'DIGITAL' || book.type === 'BOTH') && book.fileUrl && (
                         <button
                             onClick={() => {
+                                // If there is a custom handler, use it (though simplified now)
+                                // otherwise navigate to the reading page
                                 if (onDownload) {
                                     onDownload();
-                                } else if (book.fileUrl) {
-                                    window.open(book.fileUrl, '_blank');
+                                } else {
+                                    router.push(`/dashboard/library/read/${book.id}`);
                                 }
                             }}
                             className="flex-1 py-2.5 px-4 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all text-sm flex items-center justify-center gap-2"
                         >
-                            <Download className="w-4 h-4" />
-                            Download
+                            <BookOpen className="w-4 h-4" />
+                            Ler Agora
                         </button>
                     )}
                 </div>
