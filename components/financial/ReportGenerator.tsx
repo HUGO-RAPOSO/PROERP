@@ -124,10 +124,10 @@ export default function ReportGenerator({ tenantId, categories }: ReportGenerato
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="p-3 bg-white border border-gray-200 text-gray-500 rounded-xl hover:bg-gray-50 hover:text-primary-600 transition-all shadow-sm"
-                title="Gerar Relatório"
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-bold hover:bg-gray-50 hover:text-primary-600 transition-all shadow-sm h-[42px]"
             >
-                <FileText className="w-5 h-5" />
+                <FileText className="w-4 h-4" />
+                Relatórios
             </button>
 
             <BaseModal

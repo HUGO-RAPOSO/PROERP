@@ -33,12 +33,16 @@ const menuItems = [
     { name: "Configurações", icon: Settings, href: "/dashboard/settings", permission: PERMISSIONS.SETTINGS_ACCESS },
 ];
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
 interface SidebarProps {
     userPermissions?: string[];
     userRole?: string;
+    isCollapsed: boolean;
+    toggleSidebar: () => void;
 }
 
-export default function Sidebar({ userPermissions = [], userRole }: SidebarProps) {
+export default function Sidebar({ userPermissions = [], userRole, isCollapsed, toggleSidebar }: SidebarProps) {
     const pathname = usePathname();
     const isAdmin = userRole === 'ADMIN' || userRole === 'admin';
 
@@ -60,50 +64,66 @@ export default function Sidebar({ userPermissions = [], userRole }: SidebarProps
     });
 
     return (
-        <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 z-50 overflow-y-auto">
-            <div className="p-6">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-                    ProERP
-                </h1>
-                <p className="text-xs text-gray-500 mt-1">Escola Exemplo</p>
+        <aside
+            className={cn(
+                "fixed left-0 top-0 h-screen bg-white border-r border-gray-200 z-50 transition-all duration-300 ease-in-out flex flex-col",
+                isCollapsed ? "w-20" : "w-64"
+            )}
+        >
+            <div className={cn("p-6 flex items-center justify-between", isCollapsed && "px-4 justify-center")}>
+                {!isCollapsed && (
+                    <div>
+                        <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent truncate">
+                            ProERP
+                        </h1>
+                        <p className="text-xs text-gray-500 mt-1 truncate">Escola Exemplo</p>
+                    </div>
+                )}
+                {isCollapsed && (
+                    <div className="w-8 h-8 rounded-lg bg-primary-100/50 flex items-center justify-center text-primary-600 font-bold text-sm">
+                        P
+                    </div>
+                )}
             </div>
 
-            <nav className="mt-4 px-4 space-y-1">
+            {/* Toggle Button */}
+            <button
+                onClick={toggleSidebar}
+                className="absolute -right-3 top-9 w-6 h-6 bg-white border border-gray-200 rounded-full flex items-center justify-center text-gray-500 hover:text-primary-600 hover:border-primary-200 shadow-sm transition-all z-50"
+            >
+                {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+            </button>
+
+            <nav className="mt-4 px-3 space-y-1 flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin">
                 {filteredItems.map((item) => {
                     const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
                     return (
                         <Link
                             key={item.name}
                             href={item.href}
+                            title={isCollapsed ? item.name : undefined}
                             className={cn(
-                                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
+                                "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group",
                                 isActive
                                     ? "bg-primary-50 text-primary-600"
-                                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                                isCollapsed ? "justify-center" : ""
                             )}
                         >
                             <item.icon className={cn(
-                                "w-5 h-5 transition-colors",
+                                "w-5 h-5 transition-colors shrink-0",
                                 isActive ? "text-primary-600" : "text-gray-400 group-hover:text-gray-600"
                             )} />
-                            <span className="font-medium">{item.name}</span>
-                            {isActive && (
-                                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-600" />
+                            {!isCollapsed && <span className="font-medium truncate">{item.name}</span>}
+                            {!isCollapsed && isActive && (
+                                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-600 shrink-0" />
                             )}
                         </Link>
                     );
                 })}
             </nav>
 
-            <div className="absolute bottom-6 left-0 w-full px-6">
-                <button
-                    onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-                    className="flex items-center gap-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                >
-                    <LogOut className="w-5 h-5" />
-                    <span className="font-medium">Sair</span>
-                </button>
-            </div>
+
         </aside>
     );
 }

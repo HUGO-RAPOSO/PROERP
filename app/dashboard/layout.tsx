@@ -1,5 +1,4 @@
-import Sidebar from "@/components/dashboard/Sidebar";
-import Header from "@/components/dashboard/Header";
+import DashboardLayoutClient from "@/components/dashboard/DashboardLayoutClient";
 import { auth } from "@/auth";
 import { supabase } from "@/lib/supabase";
 import { redirect } from "next/navigation";
@@ -33,14 +32,8 @@ export default async function DashboardLayout({
     const userRole = session.user.role; // This is the Auth role (ADMIN/USER)
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Sidebar userPermissions={userPermissions} userRole={userRole} />
-            <div className="pl-64">
-                <Header />
-                <main className="p-8">
-                    {children}
-                </main>
-            </div>
-        </div>
+        <DashboardLayoutClient userPermissions={userPermissions} userRole={userRole}>
+            {children}
+        </DashboardLayoutClient>
     );
 }

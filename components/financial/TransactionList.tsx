@@ -40,8 +40,6 @@ interface TransactionListProps {
 export default function TransactionList({ transactions, categories, accounts, students, employees }: TransactionListProps) {
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
     const [loading, setLoading] = useState<string | null>(null);
-    const [filterCategory, setFilterCategory] = useState<string>("ALL");
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     async function handleDelete(id: string) {
         if (!confirm("Deseja excluir este lançamento financeiro?")) return;
@@ -49,6 +47,14 @@ export default function TransactionList({ transactions, categories, accounts, st
         setLoading(id);
         try {
             await deleteTransaction(id);
+            // In a real app with server-side pagination, we might want to trigger a refresh here.
+            // But since this is a client component inside a bigger one, the parent should likely handle the refresh.
+            // For now, we rely on revalidatePath in the server action if it refreshes the page, 
+            // OR we'd need a calback `onDelete` to refresh parent. 
+            // Given the current architecture, revalidatePath refreshes the SC, but DashboardOverview is checking on mount/change.
+            // We should ideally reload window or use a callback. 
+            // Let's assume revalidatePath is enough for page reload, but for client component we might need forced update.
+            window.location.reload();
         } catch (error) {
             console.error(error);
             alert("Erro ao excluir transação");
@@ -57,11 +63,6 @@ export default function TransactionList({ transactions, categories, accounts, st
         }
     }
 
-    const filteredTransactions = transactions.filter(t => {
-        if (filterCategory === "ALL") return true;
-        return t.categoryId === filterCategory;
-    });
-
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -69,43 +70,9 @@ export default function TransactionList({ transactions, categories, accounts, st
                     <h3 className="text-2xl font-black text-gray-900 tracking-tight">Últimas Transações</h3>
                     <p className="text-sm text-gray-500 font-medium">Histórico recente de todas as movimentações.</p>
                 </div>
-                <div className="relative">
-                    <button
-                        onClick={() => setIsFilterOpen(!isFilterOpen)}
-                        className={cn(
-                            "flex items-center gap-2 px-4 py-2 bg-white border text-sm font-bold rounded-xl hover:bg-gray-50 transition-all shadow-sm",
-                            isFilterOpen || filterCategory !== "ALL" ? "border-primary-500 text-primary-600 bg-primary-50" : "border-gray-200 text-gray-600"
-                        )}
-                    >
-                        <Filter className="w-4 h-4" />
-                        {filterCategory !== "ALL" ? categories.find(c => c.id === filterCategory)?.name : "Filtrar Categoria"}
-                    </button>
-
-                    {isFilterOpen && (
-                        <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
-                            <div className="p-2 space-y-1">
-                                <button
-                                    onClick={() => { setFilterCategory("ALL"); setIsFilterOpen(false); }}
-                                    className="w-full text-left px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg"
-                                >
-                                    Todas
-                                </button>
-                                {categories.map(cat => (
-                                    <button
-                                        key={cat.id}
-                                        onClick={() => { setFilterCategory(cat.id); setIsFilterOpen(false); }}
-                                        className="w-full text-left px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg"
-                                    >
-                                        {cat.name}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
             </div>
 
-            <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+            <div className="overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
                         <thead>
@@ -118,7 +85,7 @@ export default function TransactionList({ transactions, categories, accounts, st
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {filteredTransactions.map((t) => (
+                            {transactions.map((t) => (
                                 <tr key={t.id} className="group hover:bg-primary-50/30 transition-all duration-300">
                                     <td className="px-8 py-6">
                                         <div className="flex items-center gap-4">
@@ -184,7 +151,7 @@ export default function TransactionList({ transactions, categories, accounts, st
                     </table>
                 </div>
 
-                {filteredTransactions.length === 0 && (
+                {transactions.length === 0 && (
                     <div className="px-8 py-12 text-center">
                         <p className="text-gray-500 font-medium">Nenhuma transação encontrada.</p>
                     </div>

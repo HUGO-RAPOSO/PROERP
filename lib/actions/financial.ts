@@ -287,3 +287,154 @@ export async function getFinancialReportData(filters: {
         return { success: false, error: error.message };
     }
 }
+
+export async function getFinancialSummary(tenantId: string) {
+    try {
+        const client = supabaseAdmin || supabase;
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+        // Fetch current month data (only necessary fields)
+        const { data: currentData, error: currentError } = await client
+            .from('Transaction')
+            .select('amount, type')
+            .eq('tenantId', tenantId)
+            .gte('date', startOfMonth.toISOString())
+            .lte('date', endOfMonth.toISOString());
+
+        if (currentError) throw currentError;
+
+        // Fetch previous month data for trends
+        const { data: prevData, error: prevError } = await client
+            .from('Transaction')
+            .select('amount, type')
+            .eq('tenantId', tenantId)
+            .gte('date', startOfPrevMonth.toISOString())
+            .lte('date', endOfPrevMonth.toISOString());
+
+        if (prevError) throw prevError;
+
+        const calculateTotals = (transactions: any[]) => ({
+            income: transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + t.amount, 0),
+            expense: transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0)
+        });
+
+        const current = calculateTotals(currentData || []);
+        const prev = calculateTotals(prevData || []);
+
+        const calculateTrend = (curr: number, prev: number) => {
+            if (prev === 0) return curr > 0 ? 100 : 0;
+            return ((curr - prev) / prev) * 100;
+        };
+
+        return {
+            success: true,
+            data: {
+                income: current.income,
+                expense: current.expense,
+                balance: current.income - current.expense,
+                incomeTrend: calculateTrend(current.income, prev.income),
+                expenseTrend: calculateTrend(current.expense, prev.expense)
+            }
+        };
+
+    } catch (error: any) {
+        console.error("Error fetching financial summary:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getTransactionsPaginated(
+    tenantId: string,
+    page: number = 1,
+    limit: number = 10,
+    filters?: {
+        type?: "INCOME" | "EXPENSE" | "ALL";
+        categoryId?: string;
+        search?: string;
+    }
+) {
+    try {
+        const client = supabaseAdmin || supabase;
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+
+        let query = client
+            .from('Transaction')
+            .select('*, category:Category(*), student:Student(name), employee:Employee(name)', { count: 'exact' })
+            .eq('tenantId', tenantId)
+            .order('date', { ascending: false })
+            .range(from, to);
+
+        if (filters?.type && filters.type !== 'ALL') {
+            query = query.eq('type', filters.type);
+        }
+
+        if (filters?.categoryId && filters.categoryId !== 'ALL') {
+            query = query.eq('categoryId', filters.categoryId);
+        }
+
+        if (filters?.search) {
+            query = query.ilike('description', `%${filters.search}%`);
+        }
+
+        const { data, count, error } = await query;
+
+        if (error) throw error;
+
+        return { success: true, data, count };
+
+    } catch (error: any) {
+        console.error("Error fetching paginated transactions:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getCategoryStats(tenantId: string) {
+    try {
+        const client = supabaseAdmin || supabase;
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+        const { data, error } = await client
+            .from('Transaction')
+            .select(`
+                amount,
+                category:Category(name, color)
+            `)
+            .eq('tenantId', tenantId)
+            .eq('type', 'EXPENSE')
+            .gte('date', startOfMonth.toISOString())
+            .lte('date', endOfMonth.toISOString())
+            .not('categoryId', 'is', null);
+
+        if (error) throw error;
+
+        // Custom aggregation because GroupBy is complex in client
+        const categoryStats = (data || []).reduce((acc: any, t: any) => {
+            const catName = t.category?.name || 'Outros';
+            const color = t.category?.color || '#94a3b8';
+
+            if (!acc[catName]) {
+                acc[catName] = { amount: 0, color };
+            }
+            acc[catName].amount += t.amount;
+            return acc;
+        }, {});
+
+        const sortedStats = Object.entries(categoryStats)
+            .map(([name, data]: [string, any]) => ({ name, amount: data.amount, color: data.color }))
+            .sort((a, b) => b.amount - a.amount)
+            .slice(0, 5);
+
+        return { success: true, data: sortedStats };
+
+    } catch (error: any) {
+        console.error("Error fetching category stats:", error);
+        return { success: false, error: error.message };
+    }
+}
