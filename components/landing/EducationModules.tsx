@@ -1,97 +1,150 @@
+"use client";
+
+import { motion } from "framer-motion";
+import {
+    UserPlus,
+    Users2,
+    ClipboardCheck,
+    MessageSquare,
+    ArrowRight,
+    Check
+} from "lucide-react";
+
 export default function EducationModules() {
     const modules = [
         {
             title: "Matrículas e Alunos",
-            description: "Sistema completo de cadastro, matrícula online, documentação digital e histórico acadêmico.",
+            description: "Gerencie o ciclo completo do aluno, desde a prospecção até a formatura, com ferramentas digitais avançadas.",
+            icon: UserPlus,
             features: [
-                "Matrícula online automatizada",
+                "Matrícula online inteligente",
                 "Portal do aluno e responsável",
                 "Gestão de documentos digitais",
                 "Histórico escolar completo"
             ],
-            gradient: "from-blue-500 to-cyan-500"
+            color: "blue"
         },
         {
             title: "Gestão de Turmas",
-            description: "Organize turmas, horários, disciplinas e alocação de professores de forma inteligente.",
+            description: "Organize sua instituição com eficiência através de grades inteligentes e alocação dinâmica de recursos.",
+            icon: Users2,
             features: [
                 "Montagem automática de grades",
-                "Controle de capacidade",
+                "Controle de capacidade real",
                 "Alocação de professores",
-                "Calendário acadêmico"
+                "Calendário acadêmico dinâmico"
             ],
-            gradient: "from-purple-500 to-pink-500"
+            color: "purple"
         },
         {
             title: "Notas e Frequência",
-            description: "Lançamento de notas, controle de presença, boletins e relatórios de desempenho.",
+            description: "Simplifique o controle acadêmico com lançamentos em tempo real e análises de desempenho automáticas.",
+            icon: ClipboardCheck,
             features: [
-                "Lançamento de notas online",
-                "Chamada digital",
-                "Boletins automatizados",
-                "Análise de desempenho"
+                "Lançamento de notas mobile",
+                "Chamada digital QR Code",
+                "Boletins customizáveis",
+                "Dashboard de rendimento"
             ],
-            gradient: "from-orange-500 to-red-500"
+            color: "orange"
         },
         {
-            title: "Comunicação",
-            description: "Mantenha pais, alunos e professores sempre informados com comunicação integrada.",
+            title: "Comunicação 360°",
+            description: "Fortaleça o vínculo entre escola e família com canais de comunicação diretos e eficientes.",
+            icon: MessageSquare,
             features: [
-                "Avisos e circulares",
-                "Chat integrado",
-                "Notificações push",
-                "Agenda de eventos"
+                "Avisos via App e WhatsApp",
+                "Chat interno seguro",
+                "Notificações push inteligentes",
+                "Agenda de eventos integrada"
             ],
-            gradient: "from-green-500 to-emerald-500"
+            color: "green"
         }
     ];
 
+    const colorVariants: Record<string, string> = {
+        blue: "from-blue-600 to-indigo-600 text-blue-600 bg-blue-50/50 hover:bg-blue-50",
+        purple: "from-purple-600 to-pink-600 text-purple-600 bg-purple-50/50 hover:bg-purple-50",
+        orange: "from-orange-500 to-red-500 text-orange-600 bg-orange-50/50 hover:bg-orange-50",
+        green: "from-emerald-500 to-teal-600 text-emerald-600 bg-emerald-50/50 hover:bg-emerald-50",
+    };
+
     return (
-        <section className="py-20 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                        Módulos Educacionais Especializados
-                    </h2>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                        Funcionalidades desenvolvidas especificamente para o setor educacional
-                    </p>
+        <section className="py-24 bg-white relative">
+            <div className="max-w-7xl mx-auto px-6">
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                    >
+                        <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight leading-tight">
+                            Módulos feitos para<br />
+                            <span className="text-indigo-600">quem vive a educação.</span>
+                        </h2>
+                        <p className="text-xl text-slate-500 max-w-xl font-medium">
+                            Funcionalidades robustas que resolvem os desafios reais da gestão escolar.
+                        </p>
+                    </motion.div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {modules.map((module, index) => (
-                        <div
+                        <motion.div
                             key={index}
-                            className="group relative overflow-hidden rounded-3xl bg-gradient-to-br p-[2px] hover:scale-[1.02] transition-transform duration-300"
-                            style={{
-                                backgroundImage: `linear-gradient(to bottom right, var(--tw-gradient-stops))`
-                            }}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: index * 0.1 }}
+                            className="group relative flex flex-col p-10 rounded-[40px] border border-slate-100 hover:border-transparent bg-white hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 overflow-hidden"
                         >
-                            <div className={`absolute inset-0 bg-gradient-to-br ${module.gradient} opacity-10 group-hover:opacity-20 transition-opacity`}></div>
+                            <div className="relative z-10">
+                                <div className={cn(
+                                    "w-14 h-14 rounded-2xl flex items-center justify-center mb-8",
+                                    colorVariants[module.color].split(' ').slice(1).join(' ')
+                                )}>
+                                    <module.icon size={28} />
+                                </div>
 
-                            <div className="relative bg-white rounded-3xl p-8 h-full">
-                                <h3 className={`text-3xl font-bold mb-3 bg-gradient-to-r ${module.gradient} bg-clip-text text-transparent`}>
+                                <h3 className="text-3xl font-black text-slate-800 mb-4 tracking-tight group-hover:text-indigo-600 transition-colors">
                                     {module.title}
                                 </h3>
-                                <p className="text-gray-600 mb-6 leading-relaxed">
+
+                                <p className="text-slate-500 font-medium leading-relaxed mb-8 max-w-md">
                                     {module.description}
                                 </p>
 
-                                <ul className="space-y-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 mb-8">
                                     {module.features.map((feature, idx) => (
-                                        <li key={idx} className="flex items-start">
-                                            <svg className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                                            </svg>
-                                            <span className="text-gray-700">{feature}</span>
-                                        </li>
+                                        <div key={idx} className="flex items-center gap-3">
+                                            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center">
+                                                <Check className="w-3 h-3 text-emerald-600" strokeWidth={4} />
+                                            </div>
+                                            <span className="text-sm font-bold text-slate-600 tracking-tight">{feature}</span>
+                                        </div>
                                     ))}
-                                </ul>
+                                </div>
+
+                                <button className="flex items-center gap-2 text-indigo-600 font-black text-sm uppercase tracking-widest group-hover:translate-x-2 transition-transform duration-300">
+                                    Ver Detalhes do Módulo
+                                    <ArrowRight size={16} />
+                                </button>
                             </div>
-                        </div>
+
+                            {/* Background decoration */}
+                            <div className={cn(
+                                "absolute top-0 right-0 w-64 h-64 bg-gradient-to-br opacity-0 group-hover:opacity-5 transition-opacity duration-500 -z-0",
+                                colorVariants[module.color].split(' ')[0],
+                                colorVariants[module.color].split(' ')[1]
+                            )}></div>
+                        </motion.div>
                     ))}
                 </div>
             </div>
         </section>
     );
+}
+
+function cn(...classes: any[]) {
+    return classes.filter(Boolean).join(" ");
 }

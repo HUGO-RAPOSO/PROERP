@@ -17,8 +17,7 @@ export default function Hero() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group cursor-pointer">
-            <img src="/assets/logo.png" alt="Plex Logo" className="w-10 h-10 object-contain" />
-            <span className="text-xl font-black text-slate-800 tracking-tight">Plex</span>
+            <img src="/assets/logo.png" alt="Plex Logo" className="w-20 h-20 object-contain" />
           </Link>
 
           {/* Itens do Menu Atualizados */}
@@ -32,7 +31,7 @@ export default function Hero() {
           {/* Ações com Rota de Login Corrigida */}
           <div className="flex items-center gap-4">
             <Link
-              href="/dashboard/login"
+              href="/auth/login"
               className="text-sm font-bold text-slate-600 px-4 py-2 hover:text-slate-900 transition-colors"
             >
               Login

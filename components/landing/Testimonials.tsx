@@ -1,69 +1,104 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { Star, Quote } from "lucide-react";
+
 export default function Testimonials() {
     const testimonials = [
         {
             name: "Maria Silva",
             role: "Diretora - Colégio Estrela do Saber",
-            image: "👩‍💼",
-            content: "O ProERP revolucionou nossa gestão. Reduzimos a inadimplência em 40% e automatizamos processos que levavam horas. Simplesmente indispensável!",
-            rating: 5
+            content: "O Plex revolucionou nossa gestão escolar. Reduzimos a inadimplência em 40% e automatizamos processos que levavam dias. Indispensável!",
+            rating: 5,
+            initials: "MS",
+            color: "indigo"
         },
         {
             name: "João Santos",
             role: "Coordenador - Faculdade Horizonte",
-            image: "👨‍🏫",
-            content: "A gestão acadêmica ficou muito mais simples. Os professores adoram a facilidade de lançar notas e os pais têm acesso a tudo em tempo real.",
-            rating: 5
+            content: "A gestão acadêmica ficou muito mais fluida. Os professores adoram a facilidade de lançar notas e os pais acompanham tudo em tempo real.",
+            rating: 5,
+            initials: "JS",
+            color: "emerald"
         },
         {
             name: "Ana Costa",
             role: "Administradora - Instituto Educacional",
-            image: "👩‍💻",
-            content: "Implementamos em 2 semanas e já vimos resultados. O suporte é excepcional e o sistema é muito intuitivo. Recomendo fortemente!",
-            rating: 5
+            content: "Implementamos em tempo recorde e o suporte foi excepcional. O sistema é intuitivo e focado na nossa realidade em Moçambique.",
+            rating: 5,
+            initials: "AC",
+            color: "amber"
         }
     ];
 
+    const colorVariants: Record<string, string> = {
+        indigo: "bg-indigo-600 text-white",
+        emerald: "bg-emerald-600 text-white",
+        amber: "bg-amber-500 text-white",
+    };
+
     return (
-        <section className="py-20 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                        O que nossos clientes dizem
-                    </h2>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                        Instituições de ensino que transformaram sua gestão com o ProERP
-                    </p>
+        <section className="py-24 bg-[#FDFDFF] relative overflow-hidden">
+            <div className="max-w-7xl mx-auto px-6">
+                <div className="text-center mb-20">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                    >
+                        <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">
+                            Quem usa o <span className="text-indigo-600">Plex</span>, recomenda.
+                        </h2>
+                        <p className="text-xl text-slate-500 max-w-2xl mx-auto font-medium">
+                            Histórias de sucesso de instituições que transformaram sua gestão conosco.
+                        </p>
+                    </motion.div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {testimonials.map((testimonial, index) => (
-                        <div
+                        <motion.div
                             key={index}
-                            className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100"
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: index * 0.1 }}
+                            className="relative bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col h-full"
                         >
-                            <div className="flex items-center mb-4">
+                            <div className="absolute top-8 right-10 text-slate-100">
+                                <Quote size={48} strokeWidth={3} />
+                            </div>
+
+                            <div className="flex gap-1 mb-6">
                                 {[...Array(testimonial.rating)].map((_, i) => (
-                                    <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
+                                    <Star key={i} size={16} className="fill-amber-400 text-amber-400" />
                                 ))}
                             </div>
 
-                            <p className="text-gray-700 mb-6 leading-relaxed italic">
+                            <p className="text-slate-600 font-bold text-lg leading-relaxed mb-10 flex-grow italic">
                                 "{testimonial.content}"
                             </p>
 
-                            <div className="flex items-center">
-                                <div className="text-4xl mr-4">{testimonial.image}</div>
+                            <div className="flex items-center gap-4 pt-6 border-t border-slate-50">
+                                <div className={cn(
+                                    "w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl tracking-tight shadow-lg shadow-black/5",
+                                    colorVariants[testimonial.color]
+                                )}>
+                                    {testimonial.initials}
+                                </div>
                                 <div>
-                                    <div className="font-bold text-gray-900">{testimonial.name}</div>
-                                    <div className="text-sm text-gray-600">{testimonial.role}</div>
+                                    <div className="font-black text-slate-900 truncate tracking-tight">{testimonial.name}</div>
+                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">{testimonial.role}</div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             </div>
         </section>
     );
+}
+
+function cn(...classes: any[]) {
+    return classes.filter(Boolean).join(" ");
 }

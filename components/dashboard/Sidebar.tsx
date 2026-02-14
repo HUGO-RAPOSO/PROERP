@@ -74,11 +74,7 @@ export default function Sidebar({ userPermissions = [], userRole, isCollapsed, t
                 {!isCollapsed && (
                     <div className="flex items-center gap-3">
                         <img src="/assets/logo.png" alt="Plex Logo" className="w-10 h-10 object-contain" />
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900 truncate">
-                                Plex
-                            </h1>
-                        </div>
+
                     </div>
                 )}
                 {isCollapsed && (
