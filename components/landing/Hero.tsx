@@ -1,61 +1,88 @@
+"use client";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { BookOpen, Users, BarChart3, Menu } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center bg-slate-50 overflow-hidden">
-      {/* Background Decorativo Flat - Formas geométricas sutis */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -right-[5%] w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
-        <div className="absolute top-[20%] -left-[5%] w-72 h-72 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
-      </div>
-
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Badge Minimalista */}
-        <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium tracking-wide text-blue-600 bg-blue-50 rounded-full">
-          Versão 2.0 • Nova Experiência
-        </span>
-
-        <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight mb-6">
-          Gestão educacional <br />
-          <span className="text-blue-600">simples e eficiente.</span>
-        </h1>
-
-        <p className="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-          A plataforma intuitiva para escolas que buscam modernizar o controle 
-          de alunos, professores e o financeiro sem complicações.
-        </p>
-
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Link href="/auth/signup">
-            <button className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
-              Começar Gratuitamente
-            </button>
-          </Link>
-          <Link href="/auth/login">
-            <button className="w-full sm:w-auto px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-xl font-semibold hover:bg-slate-50 transition-colors">
-              Fazer Login
-            </button>
-          </Link>
+    <div className="min-h-screen bg-[#F8FAFC]">
+      {/* Navbar Minimalista */}
+      <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2 font-bold text-2xl text-slate-800">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white text-sm">G</div>
+          EduGestion
         </div>
+        <div className="hidden md:flex gap-8 text-slate-600 font-medium">
+          <Link href="#" className="hover:text-blue-600 transition-colors">Funcionalidades</Link>
+          <Link href="#" className="hover:text-blue-600 transition-colors">Sobre nós</Link>
+          <Link href="#" className="hover:text-blue-600 transition-colors">Preços</Link>
+        </div>
+        <div className="flex gap-4 items-center">
+          <Link href="/login" className="text-slate-600 font-medium px-4 py-2">Login</Link>
+          <Menu className="md:hidden text-slate-800" />
+        </div>
+      </nav>
 
-        {/* Stats Section - Flat e Clean */}
-        <div className="mt-20 pt-10 border-t border-slate-200">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-slate-900">500+</p>
-              <p className="text-sm text-slate-500 uppercase tracking-wider font-medium">Escolas</p>
+      <section className="relative pt-12 pb-20 px-8 max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
+        {/* Lado Esquerdo: Texto */}
+        <div className="flex-1 text-center lg:text-left">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h1 className="text-5xl md:text-7xl font-black text-slate-900 leading-[1.1] mb-6">
+              Sua escola no <br />
+              <span className="text-blue-600">piloto automático.</span>
+            </h1>
+            <p className="text-xl text-slate-500 mb-8 max-w-xl mx-auto lg:mx-0">
+              Gerencie alunos, notas e finanças com uma interface intuitiva feita para educadores modernos.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <button className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
+                Criar conta grátis
+              </button>
+              <button className="px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-2xl font-bold hover:border-blue-600 hover:text-blue-600 transition-all">
+                Ver demonstração
+              </button>
             </div>
-            <div className="text-center border-x border-slate-200 px-4">
-              <p className="text-3xl font-bold text-slate-900">50k+</p>
-              <p className="text-sm text-slate-500 uppercase tracking-wider font-medium">Alunos</p>
+          </motion.div>
+
+          {/* Mini Features (Flat) */}
+          <div className="mt-12 grid grid-cols-3 gap-4 border-t border-slate-100 pt-8">
+            <div className="flex flex-col items-center lg:items-start">
+              <BookOpen className="text-blue-500 mb-2" size={24} />
+              <span className="text-sm font-bold text-slate-700">Didático</span>
             </div>
-            <div className="text-center hidden md:block">
-              <p className="text-3xl font-bold text-slate-900">99.9%</p>
-              <p className="text-sm text-slate-500 uppercase tracking-wider font-medium">Uptime</p>
+            <div className="flex flex-col items-center lg:items-start">
+              <Users className="text-purple-500 mb-2" size={24} />
+              <span className="text-sm font-bold text-slate-700">Colaborativo</span>
+            </div>
+            <div className="flex flex-col items-center lg:items-start">
+              <BarChart3 className="text-orange-500 mb-2" size={24} />
+              <span className="text-sm font-bold text-slate-700">Analytics</span>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+
+        {/* Lado Direito: Ilustração Estilo Flat */}
+        <motion.div 
+          className="flex-1 relative"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          {/* Aqui você usaria sua imagem. Coloquei um placeholder estilizado que lembra a sua imagem */}
+          <div className="relative w-full max-w-[500px] mx-auto">
+            <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+            <img 
+              src="/hero-illustration.png" // Caminho da sua imagem
+              alt="Ilustração de gestão"
+              className="relative z-10 w-full h-auto drop-shadow-sm"
+            />
+          </div>
+        </motion.div>
+      </section>
+    </div>
   );
 }
