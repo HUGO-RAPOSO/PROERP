@@ -2,12 +2,17 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
-import { ChevronRight, LayoutDashboard, ShieldCheck, Zap } from "lucide-react";
+import { ChevronRight, LayoutDashboard, Zap } from "lucide-react";
 
 export default function Hero() {
+  // Configuração do WhatsApp
+  const whatsappNumber = "258879877288";
+  const whatsappMessage = encodeURIComponent("Olá! Gostaria de agendar uma demonstração do EduFlow.");
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+
   return (
-    <div className="min-h-screen bg-[#FDFDFF] selection:bg-indigo-100">
-      {/* Menu Superior Fixo */}
+    <div className="min-h-screen bg-[#FDFDFF]">
+      {/* Menu / Navbar */}
       <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2 group cursor-pointer">
@@ -15,12 +20,6 @@ export default function Hero() {
               E
             </div>
             <span className="text-xl font-black text-slate-800 tracking-tight">EduFlow</span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
-            <Link href="#" className="hover:text-indigo-600 transition-colors">Plataforma</Link>
-            <Link href="#" className="hover:text-indigo-600 transition-colors">Soluções</Link>
-            <Link href="#" className="hover:text-indigo-600 transition-colors">Cases</Link>
           </div>
 
           <div className="flex items-center gap-4">
@@ -55,29 +54,24 @@ export default function Hero() {
               </h1>
               
               <p className="text-lg text-slate-500 mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium">
-                Elimine planilhas complexas. Centralize alunos, notas e financeiro em uma plataforma flat, intuitiva e automatizada.
+                Elimine planilhas complexas. Centralize alunos, notas e financeiro em uma plataforma intuitiva e automatizada.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <button className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-100 transition-all transform hover:-translate-y-1">
+                {/* BOTÃO ATUALIZADO PARA WHATSAPP */}
+                <a 
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-100 transition-all transform hover:-translate-y-1"
+                >
                   Agendar Demo Grátis
                   <ChevronRight size={20} />
-                </button>
+                </a>
+
                 <button className="px-8 py-4 bg-white text-slate-700 border-2 border-slate-100 rounded-2xl font-bold hover:border-indigo-600 transition-all">
                   Explorar Recursos
                 </button>
-              </div>
-
-              {/* Prova Social Rápida */}
-              <div className="mt-12 flex items-center justify-center lg:justify-start gap-6">
-                <div className="flex -space-x-3">
-                  {[1,2,3].map(i => (
-                    <div key={i} className="w-10 h-10 rounded-full border-4 border-white bg-slate-200" />
-                  ))}
-                </div>
-                <p className="text-sm font-semibold text-slate-400">
-                  <span className="text-slate-900">+2.000</span> diretores já usam
-                </p>
               </div>
             </motion.div>
           </div>
@@ -90,17 +84,12 @@ export default function Hero() {
             transition={{ delay: 0.2, duration: 0.8 }}
           >
             <div className="relative w-full aspect-square max-w-[600px]">
-              {/* Elementos Decorativos de Fundo */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-indigo-50/50 rounded-full blur-[100px] -z-10" />
-              
-              {/* O Player com seu Asset */}
               <DotLottieReact
                 src="https://lottie.host/514c913e-adbe-4736-a1c9-016a7e79fbbe/gGYBKbNdJa.lottie"
                 loop
                 autoplay
               />
 
-              {/* Floating UI Card - Estética Flat */}
               <motion.div 
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
