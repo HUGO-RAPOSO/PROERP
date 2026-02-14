@@ -72,17 +72,17 @@ export default function Sidebar({ userPermissions = [], userRole, isCollapsed, t
         >
             <div className={cn("p-6 flex items-center justify-between", isCollapsed && "px-4 justify-center")}>
                 {!isCollapsed && (
-                    <div>
-                        <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent truncate">
-                            ProERP
-                        </h1>
-                        <p className="text-xs text-gray-500 mt-1 truncate">Escola Exemplo</p>
+                    <div className="flex items-center gap-3">
+                        <img src="/assets/PLEX logo.png" alt="Plex Logo" className="w-10 h-10 object-contain" />
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900 truncate">
+                                Plex
+                            </h1>
+                        </div>
                     </div>
                 )}
                 {isCollapsed && (
-                    <div className="w-8 h-8 rounded-lg bg-primary-100/50 flex items-center justify-center text-primary-600 font-bold text-sm">
-                        P
-                    </div>
+                    <img src="/assets/PLEX logo.png" alt="Plex Logo" className="w-10 h-10 object-contain" />
                 )}
             </div>
 

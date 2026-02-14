@@ -17,10 +17,8 @@ export default function Hero() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group cursor-pointer">
-            <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold group-hover:rotate-6 transition-transform">
-              E
-            </div>
-            <span className="text-xl font-black text-slate-800 tracking-tight">EduFlow</span>
+            <img src="/assets/PLEX logo.png" alt="Plex Logo" className="w-10 h-10 object-contain" />
+            <span className="text-xl font-black text-slate-800 tracking-tight">Plex</span>
           </Link>
 
           {/* Itens do Menu Atualizados */}
@@ -33,14 +31,14 @@ export default function Hero() {
 
           {/* Ações com Rota de Login Corrigida */}
           <div className="flex items-center gap-4">
-            <Link 
-              href="/dashboard/login" 
+            <Link
+              href="/dashboard/login"
               className="text-sm font-bold text-slate-600 px-4 py-2 hover:text-slate-900 transition-colors"
             >
               Login
             </Link>
-            <Link 
-              href="/auth/signup" 
+            <Link
+              href="/auth/signup"
               className="bg-slate-900 text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-600 transition-all shadow-sm"
             >
               Começar Agora
@@ -51,7 +49,7 @@ export default function Hero() {
 
       <section className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-4">
-          
+
           {/* Coluna de Texto */}
           <div className="flex-1 text-center lg:text-left">
             <motion.div
@@ -68,13 +66,13 @@ export default function Hero() {
                 Gestão que <br />
                 <span className="text-indigo-600 italic">evolui</span> com você.
               </h1>
-              
+
               <p className="text-lg text-slate-500 mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium">
                 Elimine planilhas complexas. Centralize alunos, notas e financeiro em uma plataforma intuitiva e automatizada.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <a 
+                <a
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -92,7 +90,7 @@ export default function Hero() {
           </div>
 
           {/* Coluna da Animação Lottie */}
-          <motion.div 
+          <motion.div
             className="flex-1 w-full flex justify-center items-center"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -106,7 +104,7 @@ export default function Hero() {
               />
 
               {/* Card Flutuante */}
-              <motion.div 
+              <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute top-10 right-0 bg-white p-4 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-50 hidden md:flex items-center gap-4"

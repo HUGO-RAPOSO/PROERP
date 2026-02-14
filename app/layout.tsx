@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "ProERP Educacional - Sistema de Gestão para Escolas e Faculdades",
+    title: "Plex - Plataforma de Logística Estatística Escolar",
     description: "Plataforma completa de gestão educacional com módulos financeiros, acadêmicos, CRM e muito mais.",
 };
 
