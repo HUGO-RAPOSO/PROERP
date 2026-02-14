@@ -1,66 +1,61 @@
 import Link from "next/link";
 
 export default function Hero() {
-    return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-            {/* Animated gradient background */}
-            <div className="absolute inset-0 gradient-bg opacity-90"></div>
+  return (
+    <section className="relative min-h-[90vh] flex items-center justify-center bg-slate-50 overflow-hidden">
+      {/* Background Decorativo Flat - Formas geométricas sutis */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -right-[5%] w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
+        <div className="absolute top-[20%] -left-[5%] w-72 h-72 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
+      </div>
 
-            {/* Overlay pattern */}
-            <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        {/* Badge Minimalista */}
+        <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium tracking-wide text-blue-600 bg-blue-50 rounded-full">
+          Versão 2.0 • Nova Experiência
+        </span>
 
-            {/* Content */}
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <div className="animate-float">
-                    <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-2xl">
-                        Gestão Educacional
-                        <span className="block mt-2 bg-gradient-to-r from-yellow-200 to-pink-200 bg-clip-text text-transparent">
-                            Completa e Inteligente
-                        </span>
-                    </h1>
+        <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight mb-6">
+          Gestão educacional <br />
+          <span className="text-blue-600">simples e eficiente.</span>
+        </h1>
 
-                    <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto drop-shadow-lg">
-                        A plataforma definitiva para escolas e faculdades gerenciarem alunos,
-                        professores, finanças e muito mais em um só lugar.
-                    </p>
+        <p className="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+          A plataforma intuitiva para escolas que buscam modernizar o controle 
+          de alunos, professores e o financeiro sem complicações.
+        </p>
 
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                        <Link href="/auth/signup">
-                            <button className="px-8 py-4 bg-white text-primary-600 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-2xl">
-                                Começar Gratuitamente
-                            </button>
-                        </Link>
-                        <Link href="/auth/login">
-                            <button className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white border-2 border-white/30 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all transform hover:scale-105">
-                                Fazer Login
-                            </button>
-                        </Link>
-                    </div>
-                </div>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <Link href="/auth/signup">
+            <button className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
+              Começar Gratuitamente
+            </button>
+          </Link>
+          <Link href="/auth/login">
+            <button className="w-full sm:w-auto px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-xl font-semibold hover:bg-slate-50 transition-colors">
+              Fazer Login
+            </button>
+          </Link>
+        </div>
 
-                {/* Stats */}
-                <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-                    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-                        <div className="text-4xl font-bold text-white mb-2">500+</div>
-                        <div className="text-white/80">Instituições Atendidas</div>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-                        <div className="text-4xl font-bold text-white mb-2">50k+</div>
-                        <div className="text-white/80">Alunos Gerenciados</div>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-                        <div className="text-4xl font-bold text-white mb-2">99.9%</div>
-                        <div className="text-white/80">Uptime Garantido</div>
-                    </div>
-                </div>
+        {/* Stats Section - Flat e Clean */}
+        <div className="mt-20 pt-10 border-t border-slate-200">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <p className="text-3xl font-bold text-slate-900">500+</p>
+              <p className="text-sm text-slate-500 uppercase tracking-wider font-medium">Escolas</p>
             </div>
-
-            {/* Scroll indicator */}
-            <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-                <svg className="w-6 h-6 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                    <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                </svg>
+            <div className="text-center border-x border-slate-200 px-4">
+              <p className="text-3xl font-bold text-slate-900">50k+</p>
+              <p className="text-sm text-slate-500 uppercase tracking-wider font-medium">Alunos</p>
             </div>
-        </section>
-    );
+            <div className="text-center hidden md:block">
+              <p className="text-3xl font-bold text-slate-900">99.9%</p>
+              <p className="text-sm text-slate-500 uppercase tracking-wider font-medium">Uptime</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }
