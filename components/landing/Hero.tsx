@@ -12,21 +12,37 @@ export default function Hero() {
 
   return (
     <div className="min-h-screen bg-[#FDFDFF]">
-      {/* Menu / Navbar */}
+      {/* Menu Superior Fixo com Novos Itens */}
       <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2 group cursor-pointer">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 group cursor-pointer">
             <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold group-hover:rotate-6 transition-transform">
               E
             </div>
             <span className="text-xl font-black text-slate-800 tracking-tight">EduFlow</span>
+          </Link>
+
+          {/* Itens do Menu Atualizados */}
+          <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+            <Link href="/" className="hover:text-indigo-600 transition-colors">Página inicial</Link>
+            <Link href="#servicos" className="hover:text-indigo-600 transition-colors">Serviços</Link>
+            <Link href="#sobre" className="hover:text-indigo-600 transition-colors">Sobre</Link>
+            <Link href="#contactos" className="hover:text-indigo-600 transition-colors">Contactos</Link>
           </div>
 
+          {/* Ações com Rota de Login Corrigida */}
           <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-bold text-slate-600 px-4 py-2 hover:text-slate-900 transition-colors">
+            <Link 
+              href="/dashboard/login" 
+              className="text-sm font-bold text-slate-600 px-4 py-2 hover:text-slate-900 transition-colors"
+            >
               Login
             </Link>
-            <Link href="/signup" className="bg-slate-900 text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-600 transition-all shadow-sm">
+            <Link 
+              href="/auth/signup" 
+              className="bg-slate-900 text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-600 transition-all shadow-sm"
+            >
               Começar Agora
             </Link>
           </div>
@@ -58,7 +74,6 @@ export default function Hero() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                {/* BOTÃO ATUALIZADO PARA WHATSAPP */}
                 <a 
                   href={whatsappUrl}
                   target="_blank"
@@ -90,6 +105,7 @@ export default function Hero() {
                 autoplay
               />
 
+              {/* Card Flutuante */}
               <motion.div 
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
