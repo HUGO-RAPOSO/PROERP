@@ -17,7 +17,7 @@ export default function Hero() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group cursor-pointer">
-            <img src="/assets/PLEX logo.png" alt="Plex Logo" className="w-10 h-10 object-contain" />
+            <img src="/assets/logo.png" alt="Plex Logo" className="w-10 h-10 object-contain" />
             <span className="text-xl font-black text-slate-800 tracking-tight">Plex</span>
           </Link>
 
