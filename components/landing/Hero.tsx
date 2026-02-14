@@ -1,87 +1,123 @@
 "use client";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { BookOpen, Users, BarChart3, Menu } from "lucide-react";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { ChevronRight, LayoutDashboard, ShieldCheck, Zap } from "lucide-react";
 
 export default function Hero() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      {/* Navbar Minimalista */}
-      <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
-        <div className="flex items-center gap-2 font-bold text-2xl text-slate-800">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white text-sm">G</div>
-          EduGestion
-        </div>
-        <div className="hidden md:flex gap-8 text-slate-600 font-medium">
-          <Link href="#" className="hover:text-blue-600 transition-colors">Funcionalidades</Link>
-          <Link href="#" className="hover:text-blue-600 transition-colors">Sobre nós</Link>
-          <Link href="#" className="hover:text-blue-600 transition-colors">Preços</Link>
-        </div>
-        <div className="flex gap-4 items-center">
-          <Link href="/login" className="text-slate-600 font-medium px-4 py-2">Login</Link>
-          <Menu className="md:hidden text-slate-800" />
+    <div className="min-h-screen bg-[#FDFDFF] selection:bg-indigo-100">
+      {/* Menu Superior Fixo */}
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2 group cursor-pointer">
+            <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold group-hover:rotate-6 transition-transform">
+              E
+            </div>
+            <span className="text-xl font-black text-slate-800 tracking-tight">EduFlow</span>
+          </div>
+
+          <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+            <Link href="#" className="hover:text-indigo-600 transition-colors">Plataforma</Link>
+            <Link href="#" className="hover:text-indigo-600 transition-colors">Soluções</Link>
+            <Link href="#" className="hover:text-indigo-600 transition-colors">Cases</Link>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="text-sm font-bold text-slate-600 px-4 py-2 hover:text-slate-900 transition-colors">
+              Login
+            </Link>
+            <Link href="/signup" className="bg-slate-900 text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-600 transition-all shadow-sm">
+              Começar Agora
+            </Link>
+          </div>
         </div>
       </nav>
 
-      <section className="relative pt-12 pb-20 px-8 max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
-        {/* Lado Esquerdo: Texto */}
-        <div className="flex-1 text-center lg:text-left">
+      <section className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-4">
+          
+          {/* Coluna de Texto */}
+          <div className="flex-1 text-center lg:text-left">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em] mb-6 border border-emerald-100">
+                <Zap size={12} fill="currentColor" />
+                O Futuro da Educação
+              </div>
+
+              <h1 className="text-5xl md:text-[80px] font-black text-slate-900 leading-[0.95] mb-8 tracking-tighter">
+                Gestão que <br />
+                <span className="text-indigo-600 italic">evolui</span> com você.
+              </h1>
+              
+              <p className="text-lg text-slate-500 mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium">
+                Elimine planilhas complexas. Centralize alunos, notas e financeiro em uma plataforma flat, intuitiva e automatizada.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <button className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-100 transition-all transform hover:-translate-y-1">
+                  Agendar Demo Grátis
+                  <ChevronRight size={20} />
+                </button>
+                <button className="px-8 py-4 bg-white text-slate-700 border-2 border-slate-100 rounded-2xl font-bold hover:border-indigo-600 transition-all">
+                  Explorar Recursos
+                </button>
+              </div>
+
+              {/* Prova Social Rápida */}
+              <div className="mt-12 flex items-center justify-center lg:justify-start gap-6">
+                <div className="flex -space-x-3">
+                  {[1,2,3].map(i => (
+                    <div key={i} className="w-10 h-10 rounded-full border-4 border-white bg-slate-200" />
+                  ))}
+                </div>
+                <p className="text-sm font-semibold text-slate-400">
+                  <span className="text-slate-900">+2.000</span> diretores já usam
+                </p>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Coluna da Animação Lottie */}
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            className="flex-1 w-full flex justify-center items-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-7xl font-black text-slate-900 leading-[1.1] mb-6">
-              Sua escola no <br />
-              <span className="text-blue-600">piloto automático.</span>
-            </h1>
-            <p className="text-xl text-slate-500 mb-8 max-w-xl mx-auto lg:mx-0">
-              Gerencie alunos, notas e finanças com uma interface intuitiva feita para educadores modernos.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <button className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
-                Criar conta grátis
-              </button>
-              <button className="px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-2xl font-bold hover:border-blue-600 hover:text-blue-600 transition-all">
-                Ver demonstração
-              </button>
+            <div className="relative w-full aspect-square max-w-[600px]">
+              {/* Elementos Decorativos de Fundo */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-indigo-50/50 rounded-full blur-[100px] -z-10" />
+              
+              {/* O Player com seu Asset */}
+              <DotLottieReact
+                src="https://lottie.host/514c913e-adbe-4736-a1c9-016a7e79fbbe/gGYBKbNdJa.lottie"
+                loop
+                autoplay
+              />
+
+              {/* Floating UI Card - Estética Flat */}
+              <motion.div 
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-10 right-0 bg-white p-4 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-50 hidden md:flex items-center gap-4"
+              >
+                <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center">
+                  <LayoutDashboard size={20} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Painel</p>
+                  <p className="text-sm font-bold text-slate-800">100% Sincronizado</p>
+                </div>
+              </motion.div>
             </div>
           </motion.div>
 
-          {/* Mini Features (Flat) */}
-          <div className="mt-12 grid grid-cols-3 gap-4 border-t border-slate-100 pt-8">
-            <div className="flex flex-col items-center lg:items-start">
-              <BookOpen className="text-blue-500 mb-2" size={24} />
-              <span className="text-sm font-bold text-slate-700">Didático</span>
-            </div>
-            <div className="flex flex-col items-center lg:items-start">
-              <Users className="text-purple-500 mb-2" size={24} />
-              <span className="text-sm font-bold text-slate-700">Colaborativo</span>
-            </div>
-            <div className="flex flex-col items-center lg:items-start">
-              <BarChart3 className="text-orange-500 mb-2" size={24} />
-              <span className="text-sm font-bold text-slate-700">Analytics</span>
-            </div>
-          </div>
         </div>
-
-        {/* Lado Direito: Ilustração Estilo Flat */}
-        <motion.div 
-          className="flex-1 relative"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-        >
-          {/* Aqui você usaria sua imagem. Coloquei um placeholder estilizado que lembra a sua imagem */}
-          <div className="relative w-full max-w-[500px] mx-auto">
-            <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
-            <img 
-              src="/hero-illustration.png" // Caminho da sua imagem
-              alt="Ilustração de gestão"
-              className="relative z-10 w-full h-auto drop-shadow-sm"
-            />
-          </div>
-        </motion.div>
       </section>
     </div>
   );
